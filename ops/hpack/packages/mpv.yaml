@@ -1,0 +1,65 @@
+name: mpv
+synopsis: Mpv Client
+<<: !include shared/meta.yaml
+<<: !include shared/extensions.yaml
+
+library:
+  source-dirs: lib
+  other-modules:
+    - Prelude
+  dependencies:
+    - name: base
+      version: '>= 4 && < 5'
+      mixin:
+        hiding (Prelude)
+    - aeson >= 1.4
+    - composition
+    - containers
+    - data-default
+    - either
+    - exon
+    - lens
+    - network
+    - path
+    - path-io
+    - polysemy >= 1.5
+    - polysemy-conc
+    - polysemy-log
+    - polysemy-plugin >= 0.3
+    - polysemy-resume
+    - polysemy-time
+    - process
+    - relude
+    - sop-core
+    - stm-chans
+    - template-haskell
+    - text
+    - typed-process
+
+tests:
+  mpv-unit:
+    <<: !include shared/test.yaml
+    dependencies:
+      - name: base
+        version: '>= 4 && < 5'
+        mixin:
+          hiding (Prelude)
+      - name: mpv
+        mixin:
+          - hiding (Mpv.Prelude)
+          - (Mpv.Prelude as Prelude)
+      - path
+      - polysemy >= 1.5
+      - polysemy-conc
+      - polysemy-log
+      - polysemy-log-co
+      - polysemy-plugin >= 0.3
+      - polysemy-test
+      - polysemy-time
+      - tasty
+
+ghc-options:
+  - -Wall
+  - -Wredundant-constraints
+  - -Wunused-packages
+  - -fplugin=Polysemy.Plugin

@@ -1,0 +1,239 @@
+cabal-version: 2.0
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           mpv
+version:        0.1.0.0
+synopsis:       Mpv Client
+description:    Please see the README on GitLab at <https://gitlab.tryp.io/haskell/bodhi>
+category:       Video
+author:         Torsten Schmits
+maintainer:     tek@tryp.io
+copyright:      2021 Torsten Schmits
+license:        OtherLicense
+license-file:   LICENSE
+build-type:     Simple
+
+library
+  exposed-modules:
+      Mpv.Class.CommandEvent
+      Mpv.Command
+      Mpv.Data.AudioDelay
+      Mpv.Data.AudioId
+      Mpv.Data.AudioTrack
+      Mpv.Data.AudioTracks
+      Mpv.Data.Command
+      Mpv.Data.Message
+      Mpv.Data.MpvError
+      Mpv.Data.MpvEvent
+      Mpv.Data.MpvInfo
+      Mpv.Data.MpvProcess
+      Mpv.Data.MpvResources
+      Mpv.Data.Node
+      Mpv.Data.PlaybackState
+      Mpv.Data.PropertyKey
+      Mpv.Data.Request
+      Mpv.Data.RequestId
+      Mpv.Data.Response
+      Mpv.Data.Seek
+      Mpv.Data.SeekFlags
+      Mpv.Data.SubDelay
+      Mpv.Data.Subtitle
+      Mpv.Data.SubtitleId
+      Mpv.Data.Subtitles
+      Mpv.Data.Track
+      Mpv.Data.VideoDuration
+      Mpv.Data.VideoExpired
+      Mpv.Data.VideoId
+      Mpv.Data.VideoProgress
+      Mpv.Data.VideoTrack
+      Mpv.Data.VideoTracks
+      Mpv.Data.Volume
+      Mpv.Effect.Ipc
+      Mpv.Effect.Mpv
+      Mpv.Interpreter.Ipc
+      Mpv.Interpreter.Mpv
+      Mpv.MpvResources
+      Mpv.Prelude
+      Mpv.Prelude.Debug
+      Mpv.Process
+      Mpv.Response
+      Mpv.Socket
+      Mpv.SocketQueues
+  other-modules:
+      Prelude
+  hs-source-dirs:
+      lib
+  default-extensions:
+      AllowAmbiguousTypes
+      ApplicativeDo
+      BangPatterns
+      BinaryLiterals
+      BlockArguments
+      ConstraintKinds
+      DataKinds
+      DefaultSignatures
+      DeriveAnyClass
+      DeriveDataTypeable
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveTraversable
+      DerivingStrategies
+      DisambiguateRecordFields
+      DoAndIfThenElse
+      DuplicateRecordFields
+      EmptyDataDecls
+      ExistentialQuantification
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      GeneralizedNewtypeDeriving
+      InstanceSigs
+      KindSignatures
+      LambdaCase
+      LiberalTypeSynonyms
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      OverloadedLists
+      PackageImports
+      PartialTypeSignatures
+      PatternGuards
+      PatternSynonyms
+      PolyKinds
+      QuantifiedConstraints
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      RecursiveDo
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TupleSections
+      TypeApplications
+      TypeFamilies
+      TypeFamilyDependencies
+      TypeOperators
+      TypeSynonymInstances
+      UndecidableInstances
+      UnicodeSyntax
+      ViewPatterns
+  ghc-options: -Wall -Wredundant-constraints -Wunused-packages -fplugin=Polysemy.Plugin
+  build-depends:
+      aeson >=1.4
+    , base ==4.*
+    , composition
+    , containers
+    , data-default
+    , either
+    , exon
+    , lens
+    , network
+    , path
+    , path-io
+    , polysemy >=1.5
+    , polysemy-conc
+    , polysemy-log
+    , polysemy-plugin >=0.3
+    , polysemy-resume
+    , polysemy-time
+    , process
+    , relude
+    , sop-core
+    , stm-chans
+    , template-haskell
+    , text
+    , typed-process
+  mixins:
+      base hiding (Prelude)
+  default-language: Haskell2010
+
+test-suite mpv-unit
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Mpv.Test.LoadTest
+      Mpv.Test.MessageSplitTest
+      Paths_mpv
+  hs-source-dirs:
+      test
+  default-extensions:
+      AllowAmbiguousTypes
+      ApplicativeDo
+      BangPatterns
+      BinaryLiterals
+      BlockArguments
+      ConstraintKinds
+      DataKinds
+      DefaultSignatures
+      DeriveAnyClass
+      DeriveDataTypeable
+      DeriveFoldable
+      DeriveFunctor
+      DeriveGeneric
+      DeriveTraversable
+      DerivingStrategies
+      DisambiguateRecordFields
+      DoAndIfThenElse
+      DuplicateRecordFields
+      EmptyDataDecls
+      ExistentialQuantification
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      GeneralizedNewtypeDeriving
+      InstanceSigs
+      KindSignatures
+      LambdaCase
+      LiberalTypeSynonyms
+      MultiParamTypeClasses
+      MultiWayIf
+      NamedFieldPuns
+      OverloadedStrings
+      OverloadedLists
+      PackageImports
+      PartialTypeSignatures
+      PatternGuards
+      PatternSynonyms
+      PolyKinds
+      QuantifiedConstraints
+      QuasiQuotes
+      RankNTypes
+      RecordWildCards
+      RecursiveDo
+      ScopedTypeVariables
+      StandaloneDeriving
+      TemplateHaskell
+      TupleSections
+      TypeApplications
+      TypeFamilies
+      TypeFamilyDependencies
+      TypeOperators
+      TypeSynonymInstances
+      UndecidableInstances
+      UnicodeSyntax
+      ViewPatterns
+  ghc-options: -Wall -Wredundant-constraints -Wunused-packages -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base ==4.*
+    , mpv
+    , path
+    , polysemy >=1.5
+    , polysemy-conc
+    , polysemy-log
+    , polysemy-log-co
+    , polysemy-plugin >=0.3
+    , polysemy-test
+    , polysemy-time
+    , tasty
+  mixins:
+      base hiding (Prelude)
+    , mpv hiding (Mpv.Prelude)
+    , mpv (Mpv.Prelude as Prelude)
+  default-language: Haskell2010

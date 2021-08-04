@@ -1,0 +1,7 @@
+cradle:
+  cabal:
+    - path: "./packages/mpv/lib"
+      component: "lib:mpv"
+
+    - path: "./packages/mpv/test"
+      component: "mpv:test:mpv-unit"
