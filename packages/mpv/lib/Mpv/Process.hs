@@ -4,13 +4,11 @@ module Mpv.Process where
 
 import Path (Abs, File, Path, Rel, parent, relfile, toFilePath, (</>))
 import Path.IO (createTempDir, getTempDir, removeDirRecur)
-import Polysemy.Error (fromExceptionSem)
 import Polysemy.Resource (bracket)
 import System.Process.Typed (Process, ProcessConfig, proc, startProcess, stopProcess)
 
 import qualified Mpv.Data.MpvError as MpvError
 import Mpv.Data.MpvError (MpvError)
-import Mpv.Data.MpvProcess (MpvProcess (MpvProcess))
 
 tempSocket ::
   Member (Embed IO) r =>
@@ -20,52 +18,50 @@ tempSocket = do
   dir <- createTempDir systemTmp "mpv-hs-"
   pure (dir </> [relfile|ipc|])
 
+withTempSocketPath ::
+  Members [Resource, Embed IO] r =>
+  (Path Abs File -> Sem r a) ->
+  Sem r a
+withTempSocketPath =
+  bracket tempSocket (tryAny_ . removeDirRecur . parent)
+
 mpvProc ::
-  Member (Embed IO) r =>
-  Sem r (Path Abs File, ProcessConfig () () ())
-mpvProc = do
-  sock <- tempSocket
-  let
-    args = [
-      [exon|--input-ipc-server=#{toFilePath sock}|],
-      "--idle=once",
-      "--no-terminal"
-      ]
-  pure (sock, proc "mpv" args)
+  Path Abs File ->
+  ProcessConfig () () ()
+mpvProc socket =
+  proc "mpv" [
+    [exon|--input-ipc-server=#{toFilePath socket}|],
+    "--idle=once",
+    "--no-terminal"
+  ]
 
 startMpvProcess ::
-  Members [Error SomeException, Embed IO, Final IO] r =>
-  Sem r (Path Abs File, Process () () ())
-startMpvProcess =
-  fromExceptionSem @SomeException do
-    (sock, conf) <- mpvProc
-    prc <- embed (startProcess conf)
-    pure (sock, prc)
-
-spawn ::
   Members [Embed IO, Final IO] r =>
-  Sem r (Either MpvError MpvProcess)
-spawn = do
-  runError @SomeException startMpvProcess >>= \case
-    Right (sock, prc) ->
-      pure (Right (MpvProcess sock prc))
-    Left err ->
-      pure (Left (MpvError.Fatal (show err)))
+  Path Abs File ->
+  Sem r (Either MpvError (Process () () ()))
+startMpvProcess socket =
+  mapLeft MpvError.Fatal <$> tryAny (startProcess (mpvProc socket))
 
 kill ::
   Members [Embed IO, Final IO] r =>
-  Either MpvError MpvProcess ->
+  Either MpvError (Process () () ()) ->
   Sem r ()
-kill = \case
-  Right (MpvProcess sock prc) -> do
-    tryAny_ (stopProcess prc)
-    tryAny_ (removeDirRecur (parent sock))
-  Left _ ->
-    unit
+kill =
+  traverse_ (tryAny_ . stopProcess)
 
 withMpvProcess ::
   Members [Resource, Embed IO, Final IO] r =>
-  (Either MpvError MpvProcess -> Sem r a) ->
+  Path Abs File ->
+  (Either MpvError (Process () () ()) -> Sem r a) ->
   Sem r a
-withMpvProcess =
-  bracket spawn kill
+withMpvProcess socket =
+  bracket (startMpvProcess socket) kill
+
+withMpvProcessAndSocket ::
+  Members [Resource, Embed IO, Final IO] r =>
+  (Either MpvError (Path Abs File) -> Sem r a) ->
+  Sem r a
+withMpvProcessAndSocket run = do
+  withTempSocketPath \ socket ->
+    withMpvProcess socket \ prc ->
+      run (socket <$ prc)

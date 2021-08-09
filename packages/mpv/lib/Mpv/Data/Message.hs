@@ -1,7 +1,5 @@
 module Mpv.Data.Message where
 
-import Data.Aeson (Value)
-
 import Mpv.Data.MpvEvent (EventName)
 
 data Message =

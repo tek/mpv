@@ -1,31 +1,32 @@
 module Mpv.Data.MpvResources where
 
 import Control.Concurrent.STM.TBMQueue (TBMQueue)
-import Data.Aeson (Value)
 import Network.Socket (Socket)
 
 import Mpv.Data.RequestId (RequestId)
 import Mpv.Data.Response (ResponseError)
 
-newtype InMessage =
-  InMessage { unInMessage :: ByteString }
+data InMessage fmt =
+  InMessage { unInMessage :: fmt }
+  |
+  InMessageError { error :: Text }
   deriving (Eq, Show, Generic)
 
-newtype OutMessage =
-  OutMessage { unOutMessage :: ByteString }
+newtype OutMessage fmt =
+  OutMessage { unOutMessage :: fmt }
   deriving (Eq, Show, Generic)
 
-data Requests =
+data Requests fmt =
   Requests {
     nextId :: RequestId,
-    pending :: Map RequestId (MVar (Either ResponseError Value))
+    pending :: Map RequestId (MVar (Either ResponseError fmt))
   }
   deriving stock (Eq)
 
-data MpvResources =
+data MpvResources fmt =
   MpvResources {
-      socket :: Socket,
-      outQueue :: TBMQueue OutMessage,
-      inQueue :: TBMQueue InMessage,
-      requests :: TVar Requests
-    }
+    socket :: Socket,
+    outQueue :: TBMQueue (OutMessage fmt),
+    inQueue :: TBMQueue (InMessage fmt),
+    requests :: TVar (Requests fmt)
+  }

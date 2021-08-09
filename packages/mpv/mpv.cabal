@@ -19,7 +19,6 @@ build-type:     Simple
 library
   exposed-modules:
       Mpv.Class.CommandEvent
-      Mpv.Command
       Mpv.Data.AudioDelay
       Mpv.Data.AudioId
       Mpv.Data.AudioTrack
@@ -29,10 +28,10 @@ library
       Mpv.Data.MpvError
       Mpv.Data.MpvEvent
       Mpv.Data.MpvInfo
-      Mpv.Data.MpvProcess
       Mpv.Data.MpvResources
       Mpv.Data.Node
       Mpv.Data.PlaybackState
+      Mpv.Data.Property
       Mpv.Data.PropertyKey
       Mpv.Data.Request
       Mpv.Data.RequestId
@@ -51,8 +50,10 @@ library
       Mpv.Data.VideoTrack
       Mpv.Data.VideoTracks
       Mpv.Data.Volume
+      Mpv.Effect.Commands
       Mpv.Effect.Ipc
       Mpv.Effect.Mpv
+      Mpv.Interpreter.Commands
       Mpv.Interpreter.Ipc
       Mpv.Interpreter.Mpv
       Mpv.MpvResources
@@ -60,6 +61,7 @@ library
       Mpv.Prelude.Debug
       Mpv.Process
       Mpv.Response
+      Mpv.Seek
       Mpv.Socket
       Mpv.SocketQueues
   other-modules:

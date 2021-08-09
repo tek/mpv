@@ -1,6 +1,6 @@
 module Mpv.Data.MpvEvent where
 
-import Data.Aeson (Value, withText)
+import Data.Aeson (withText)
 
 data EventName =
   FileLoaded

@@ -10,10 +10,8 @@ import Polysemy.Time (Time)
 
 import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvEvent (MpvEvent)
-import qualified Mpv.Data.MpvProcess as MpvProcess
-import Mpv.Data.MpvProcess (MpvProcess (MpvProcess))
 import Mpv.Data.MpvResources (InMessage, MpvResources (MpvResources), OutMessage, Requests (Requests))
-import Mpv.Process (withMpvProcess)
+import Mpv.Process (withMpvProcess, withTempSocketPath)
 import Mpv.Response (responseListener)
 import Mpv.Socket (withSocket)
 import Mpv.SocketQueues (withSocketQueues)
@@ -23,19 +21,20 @@ withMpvSocket ::
   (Either MpvError Socket -> Sem r a) ->
   Sem r a
 withMpvSocket action =
-  withMpvProcess \case
-    Right MpvProcess { socketPath } ->
-      withSocket socketPath action
-    Left err ->
-      action (Left err)
+  withTempSocketPath \ socketPath ->
+    withMpvProcess socketPath \case
+        Right _ ->
+          withSocket socketPath action
+        Left err ->
+          action (Left err)
 
 withIpcIO ::
   Members [Events t MpvEvent, Resource, Race, Async, Log, Embed IO, Final IO] r =>
-  (MpvResources -> Sem r a) ->
+  (MpvResources Value -> Sem r a) ->
   Socket ->
-  TBMQueue OutMessage ->
-  TBMQueue InMessage ->
-  TVar Requests ->
+  TBMQueue (OutMessage Value) ->
+  TBMQueue (InMessage Value) ->
+  TVar (Requests Value) ->
   Sem r a
 withIpcIO action socket outQ inQ requests =
   withSocketQueues res do
@@ -48,7 +47,7 @@ withIpcIO action socket outQ inQ requests =
 
 withSTMResources ::
   Members [Resource, Embed IO] r =>
-  (TBMQueue OutMessage -> TBMQueue InMessage -> TVar Requests -> Sem r a) ->
+  (TBMQueue (OutMessage fmt) -> TBMQueue (InMessage fmt) -> TVar (Requests Value) -> Sem r a) ->
   Sem r a
 withSTMResources action = do
   reqs <- embed (newTVarIO (Requests 0 mempty))
@@ -56,7 +55,7 @@ withSTMResources action = do
 
 withIpc ::
   Members [Events token MpvEvent, Resource, Race, Async, Log, Time t d, Embed IO, Final IO] r =>
-  (Either MpvError MpvResources -> Sem r a) ->
+  (Either MpvError (MpvResources Value) -> Sem r a) ->
   Sem r a
 withIpc run =
   withMpvSocket \case

@@ -1,6 +1,5 @@
 module Mpv.Response where
 
-import qualified Data.Aeson as Aeson
 import Data.Aeson (Value (Null), fromJSON)
 import qualified Data.Map.Strict as Map
 import Polysemy.AtomicState (atomicState')
@@ -12,7 +11,7 @@ import Polysemy.Log (Log)
 
 import Mpv.Data.Message (Message (ResponseEvent, ResponseMessage))
 import Mpv.Data.MpvEvent (MpvEvent (MpvEvent))
-import Mpv.Data.MpvResources (InMessage (InMessage), Requests (Requests))
+import Mpv.Data.MpvResources (InMessage (InMessage, InMessageError), Requests (Requests))
 import Mpv.Data.RequestId (RequestId (RequestId))
 import Mpv.Data.Response (Response (Response), ResponseError (ResponseError))
 
@@ -25,36 +24,33 @@ decodePayload err _ =
 decodeMessage ::
   Value ->
   Message ->
-  Either MpvEvent Response
+  Either MpvEvent (Response Value)
 decodeMessage payload = \case
   ResponseMessage requestId err value ->
     Right (Response (RequestId requestId) (decodePayload err value))
   ResponseEvent name ->
     Left (MpvEvent name payload)
 
-resultToEither :: Aeson.Result a -> Either Text a
-resultToEither = \case
-  Aeson.Success a -> Right a
-  Aeson.Error s -> Left (toText s)
-
 decodeInMessage ::
-  InMessage ->
-  Either Text (Either MpvEvent Response)
+  InMessage Value ->
+  Either Text (Either MpvEvent (Response Value))
 decodeInMessage (InMessage msg) = do
-  value <- jsonDecode msg
-  message <- resultToEither (fromJSON value)
-  pure (decodeMessage value message)
+  message <- aesonToEither (fromJSON msg)
+  pure (decodeMessage msg message)
+decodeInMessage (InMessageError err) =
+  Left err
 
 parseError ::
+  Show fmt =>
   Member Log r =>
-  InMessage ->
+  InMessage fmt ->
   Text ->
   Sem r ()
-parseError (InMessage msg) err =
-  Log.error [exon|mpv response parse error: #{err}; #{decodeUtf8 msg}|]
+parseError msg err =
+  Log.error [exon|mpv response parse error: #{err}; #{show msg}|]
 
 notifyResponse ::
-  Members [AtomicState Requests, Log, Embed IO] r =>
+  Members [AtomicState (Requests Value), Log, Embed IO] r =>
   RequestId ->
   Either ResponseError Value ->
   Sem r ()
@@ -69,9 +65,9 @@ notifyResponse requestId result =
       (Requests n (Map.delete requestId p), Map.lookup requestId p)
 
 processMessage ::
-  Members [Events t MpvEvent, AtomicState Requests, Log, Embed IO] r =>
-  InMessage ->
-  Either Text (Either MpvEvent Response) ->
+  Members [Events t MpvEvent, AtomicState (Requests Value), Log, Embed IO] r =>
+  InMessage Value ->
+  Either Text (Either MpvEvent (Response Value)) ->
   Sem r ()
 processMessage msg = \case
   Right (Right (Response requestId payload)) ->
@@ -82,7 +78,7 @@ processMessage msg = \case
     parseError msg err
 
 responseListener ::
-  Members [Events t MpvEvent, Queue InMessage, AtomicState Requests, Log, Embed IO] r =>
+  Members [Events t MpvEvent, Queue (InMessage Value), AtomicState (Requests Value), Log, Embed IO] r =>
   Sem r ()
 responseListener =
   Queue.loop \ msg -> processMessage msg (decodeInMessage msg)

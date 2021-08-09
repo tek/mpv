@@ -13,6 +13,7 @@ import qualified Mpv.Data.SeekFlags as SeekFlags
 import Mpv.Data.SeekFlags (SeekFlags (SeekFlags), SeekReference (Absolute), SeekRestart (Exact))
 import qualified Mpv.Effect.Mpv as Mpv
 import Mpv.Interpreter.Mpv (interpretMpvNative, withMpv)
+import qualified Mpv.Data.Property as Property
 
 test_loadFile :: UnitTest
 test_loadFile =
@@ -23,5 +24,6 @@ test_loadFile =
         withMpv do
           resumeHoistError show do
             Mpv.command (Command.Load vid)
+            dbgs =<< Mpv.prop Property.Duration
             Mpv.command (Command.Seek 50 (SeekFlags Absolute SeekFlags.Percent Exact))
             void $ Mpv.command Command.Stop

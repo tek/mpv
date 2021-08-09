@@ -1,6 +1,5 @@
 module Mpv.Data.Response where
 
-import Data.Aeson (Value)
 import Mpv.Data.RequestId (RequestId)
 
 newtype ResponseError =
@@ -10,9 +9,9 @@ newtype ResponseError =
 
 defaultJson ''ResponseError
 
-data Response =
+data Response fmt =
   Response {
     requestId :: RequestId,
-    payload :: Either ResponseError Value
+    payload :: Either ResponseError fmt
   }
   deriving (Eq, Show, Generic)

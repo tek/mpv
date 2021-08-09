@@ -11,19 +11,29 @@ import Polysemy.Conc.Interpreter.Queue.TBM (interpretQueueTBMWith)
 import qualified Polysemy.Log as Log
 import Polysemy.Log (Log)
 
-import Mpv.Data.MpvResources (InMessage (InMessage), MpvResources (MpvResources), OutMessage (OutMessage))
+import Mpv.Data.MpvResources (
+  InMessage (InMessage, InMessageError),
+  MpvResources (MpvResources),
+  OutMessage (OutMessage),
+  )
 
 messageLines :: ByteString -> ([ByteString], ByteString)
 messageLines =
   first (filter (not . ByteString.null) . ByteString.split 10) .
   ByteString.spanEnd (/= 10)
 
+parseInMessage :: ByteString -> InMessage Value
+parseInMessage =
+  jsonDecode >>> \case
+    Right v -> InMessage v
+    Left err -> InMessageError err
+
 publishAsInMessage ::
-  Member (Queue InMessage) r =>
+  Member (Queue (InMessage Value)) r =>
   ByteString ->
   Sem r ()
 publishAsInMessage =
-  Queue.write . InMessage
+  Queue.write . parseInMessage
 
 concatMessages ::
   ByteString ->
@@ -46,7 +56,7 @@ accumulateMessages buf =
 
 readQueue ::
   ∀ r .
-  Members [Queue InMessage, Embed IO] r =>
+  Members [Queue (InMessage Value), Embed IO] r =>
   Socket ->
   Sem r ()
 readQueue socket =
@@ -62,13 +72,13 @@ readQueue socket =
 
 writeQueue ::
   ∀ r .
-  Members [Queue OutMessage, Log, Embed IO] r =>
+  Members [Queue (OutMessage Value), Log, Embed IO] r =>
   Socket ->
   Sem r ()
 writeQueue socket =
   Queue.read >>= \case
     QueueResult.Success (OutMessage msg) ->
-      tryAny (Socket.sendAll socket (msg <> "\n")) >>= \case
+      tryAny (Socket.sendAll socket (jsonEncode msg <> "\n")) >>= \case
         Right () ->
           writeQueue socket
         Left err ->
@@ -78,17 +88,17 @@ writeQueue socket =
 
 interpretQueues ::
   Members [Resource, Race, Embed IO] r =>
-  TBMQueue OutMessage ->
-  TBMQueue InMessage ->
-  InterpretersFor [Queue InMessage, Queue OutMessage] r
+  TBMQueue (OutMessage fmt) ->
+  TBMQueue (InMessage fmt) ->
+  InterpretersFor [Queue (InMessage fmt), Queue (OutMessage fmt)] r
 interpretQueues outQ inQ =
   interpretQueueTBMWith outQ .
   interpretQueueTBMWith inQ
 
 withSocketQueues ::
   Members [Resource, Async, Race, Log, Embed IO] r =>
-  MpvResources ->
-  InterpretersFor [Queue InMessage, Queue OutMessage] r
+  MpvResources Value ->
+  InterpretersFor [Queue (InMessage Value), Queue (OutMessage Value)] r
 withSocketQueues (MpvResources socket outQ inQ _) =
   interpretQueues outQ inQ .
   withAsync_ (readQueue socket) .

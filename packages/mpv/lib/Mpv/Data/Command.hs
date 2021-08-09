@@ -1,12 +1,13 @@
 module Mpv.Data.Command where
 
-import Data.Aeson.Types (Value, listValue)
+import Data.Aeson.Types (listValue)
 import Data.SOP (All, Compose, I, K (K), NP, hcmap, hcollapse, unI)
 import Path (Abs, File, Path)
 import Prelude hiding (All, Compose, Stop)
 
 import Mpv.Class.CommandEvent (CommandEvent (..))
 import Mpv.Data.MpvEvent (EventName (EndFile, FileLoaded))
+import Mpv.Data.Property (Property)
 import Mpv.Data.SeekFlags (SeekFlags)
 
 newtype CommandArgs (as :: [Type]) =
@@ -23,16 +24,18 @@ instance All ToJSON as => ToJSON (CommandArgs as) where
     unCommandArgs
 
 data Command :: Type -> Type where
-  Manual :: (All ToJSON as, All (Compose Show I) as, FromJSON a) => Maybe EventName -> NP I as -> Command a
+  Manual :: (All ToJSON as, All (Compose Show I) as, FromJSON a) => Maybe EventName -> Text -> NP I as -> Command a
   Load :: Path Abs File -> Command Value
   Stop :: Command Value
   Seek :: Double -> SeekFlags -> Command Value
+  Prop :: Property v -> Command v
 
 deriving instance Show (Command a)
 
 instance CommandEvent Command where
   commandEvent = \case
-    Manual event _ -> event
+    Manual event _ _ -> event
     Load _ -> Just FileLoaded
     Stop -> Just EndFile
     Seek _ _ -> Nothing
+    Prop _ -> Nothing

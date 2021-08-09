@@ -1,6 +1,5 @@
 module Mpv.Interpreter.Mpv where
 
-import Data.Aeson (Value)
 import Polysemy.Conc (Race, interpretEventsChan)
 import Polysemy.Conc.Effect.Events (Consume, EventToken)
 import Polysemy.Conc.Effect.Scoped (Scoped, runScoped, scoped)
@@ -16,51 +15,52 @@ import qualified Mpv.Effect.Ipc as Ipc
 import Mpv.Effect.Ipc (Ipc)
 import qualified Mpv.Effect.Mpv as Mpv
 import Mpv.Effect.Mpv (Mpv)
+import Mpv.Interpreter.Commands (interpretCommandsJson)
 import Mpv.Interpreter.Ipc (interpretIpc)
 import Mpv.MpvResources (withIpc)
 
 waitEventCmd ::
-  ∀ u command b r a .
   TimeUnit u =>
   CommandEvent command =>
-  Members [Ipc command, Stop MpvError] r =>
+  Member (Ipc fmt command) r =>
   u ->
   command b ->
   Sem r a ->
-  Sem r (Maybe Value, a)
+  Sem r a
 waitEventCmd wait (commandEvent -> Just event) ma =
-  Ipc.waitEvent event wait ma
+  snd <$> Ipc.waitEvent event wait ma
 waitEventCmd _ _ ma =
-  (Nothing,) <$> ma
-
-interpretMpvProcess ::
-  CommandEvent command =>
-  Member (Ipc command !! MpvError) r =>
-  InterpreterFor (Mpv command !! MpvError) r
-interpretMpvProcess =
-  interpretResumable \case
-    Mpv.CommandSync wait cmd ->
-      fmap snd $ restop $ waitEventCmd wait cmd do
-        Ipc.sync cmd
-    Mpv.CommandAsync cmd ->
-        restop (Ipc.async cmd)
+  ma
 
 interpretMpvIpc ::
+  CommandEvent command =>
+  Member (Ipc fmt command !! MpvError) r =>
+  InterpreterFor (Mpv command !! MpvError) r
+interpretMpvIpc =
+  interpretResumable \case
+    Mpv.CommandSync wait cmd ->
+      restop (waitEventCmd wait cmd (Ipc.sync cmd))
+    Mpv.CommandAsync cmd ->
+      restop (Ipc.async cmd)
+    Mpv.Prop prop ->
+      restop (Ipc.prop prop)
+
+interpretMpvResources ::
   Members [Scoped (EventToken token) (Consume MpvEvent), Resource, Async, Race, Log, Embed IO, Final IO] r =>
-  Either MpvError MpvResources ->
+  Either MpvError (MpvResources Value) ->
   InterpreterFor (Mpv Command !! MpvError) r
-interpretMpvIpc = \case
+interpretMpvResources = \case
   Right res ->
-    interpretIpc res . interpretMpvProcess . raiseUnder
+    interpretCommandsJson . interpretIpc res . interpretMpvIpc . raiseUnder2
   Left err ->
     interpretResumableH \ _ -> stop err
 
 interpretMpvNative ::
   Members [Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
-  InterpreterFor (Scoped (Either MpvError MpvResources) (Mpv Command !! MpvError)) r
+  InterpreterFor (Scoped (Either MpvError (MpvResources Value)) (Mpv Command !! MpvError)) r
 interpretMpvNative =
   interpretEventsChan .
-  runScoped withIpc interpretMpvIpc .
+  runScoped withIpc interpretMpvResources .
   raiseUnder2
 
 withMpv ::

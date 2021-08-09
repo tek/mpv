@@ -1,15 +1,16 @@
 module Mpv.Data.Request where
 
 import Data.SOP (All, Compose, I)
+import Prelude hiding (All, Compose)
 
 import Mpv.Data.Command (CommandArgs)
 import Mpv.Data.RequestId (RequestId)
-import Prelude hiding (All, Compose)
 
 data Request as =
   Request {
     request_id :: RequestId,
-    command :: CommandArgs as
+    command :: CommandArgs as,
+    async :: Bool
   }
   deriving (Generic)
 

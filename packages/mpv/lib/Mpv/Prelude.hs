@@ -19,6 +19,7 @@ module Mpv.Prelude (
   module Polysemy.Async,
   module Polysemy.AtomicState,
   module Polysemy.Error,
+  module Polysemy.Internal.Tactics,
   module Polysemy.Reader,
   module Polysemy.Resource,
   module Polysemy.Resume,
@@ -29,7 +30,7 @@ module Mpv.Prelude (
 import Control.Exception (catch, try)
 import Control.Lens (at, makeClassy, over, (%~), (.~), (<>~), (?~), (^.))
 import qualified Data.Aeson as Aeson
-import Data.Aeson (FromJSON (parseJSON), ToJSON (toJSON), SumEncoding (UntaggedValue))
+import Data.Aeson (FromJSON (parseJSON), SumEncoding (UntaggedValue), ToJSON (toJSON), Value)
 import Data.Aeson.TH (deriveFromJSON, deriveJSON)
 import Data.Composition ((.:), (.:.), (.::))
 import Data.Default (Default (def))
@@ -71,8 +72,9 @@ import Polysemy (
   )
 import Polysemy.Async (Async, async, asyncToIO, asyncToIOFinal, await, sequenceConcurrently)
 import Polysemy.AtomicState (AtomicState, atomicGet, atomicGets, atomicModify', atomicPut, runAtomicStateTVar)
-import Polysemy.Error (Error, fromEither, mapError, note, runError, throw, fromExceptionVia)
+import Polysemy.Error (Error, fromEither, fromExceptionVia, mapError, note, runError, throw)
 import Polysemy.Internal.Kind (Append)
+import Polysemy.Internal.Tactics (liftT)
 import Polysemy.Reader (Reader, ask, asks)
 import Polysemy.Resource (Resource, resourceToIO, resourceToIOFinal, runResource)
 import Polysemy.Resume
@@ -117,15 +119,6 @@ tuple ::
 tuple fa fb =
   (,) <$> fa <*> fb
 {-# inline tuple #-}
-
-liftT ::
-  ∀ m f r e a .
-  Functor f =>
-  Sem r a ->
-  Sem (WithTactics e f m r) (f a)
-liftT =
-  pureT <=< raise
-{-# inline liftT #-}
 
 tryAny ::
   Member (Embed IO) r =>
@@ -225,22 +218,6 @@ jsonDecode =
   mapLeft toText . Aeson.eitherDecodeStrict'
 {-# inline jsonDecode #-}
 
-jsonDecodeL ::
-  FromJSON a =>
-  LByteString ->
-  Either Text a
-jsonDecodeL =
-  mapLeft toText . Aeson.eitherDecode'
-{-# inline jsonDecodeL #-}
-
-jsonDecodeText ::
-  FromJSON a =>
-  Text ->
-  Either Text a
-jsonDecodeText =
-  mapLeft toText . Aeson.eitherDecodeStrict' . encodeUtf8
-{-# inline jsonDecodeText #-}
-
 jsonEncode ::
   ToJSON a =>
   a ->
@@ -249,21 +226,18 @@ jsonEncode =
   toStrict . Aeson.encode
 {-# inline jsonEncode #-}
 
-jsonEncodeL ::
-  ToJSON a =>
-  a ->
-  LByteString
-jsonEncodeL =
-  Aeson.encode
-{-# inline jsonEncodeL #-}
+aesonToEither :: Aeson.Result a -> Either Text a
+aesonToEither = \case
+  Aeson.Success a -> Right a
+  Aeson.Error s -> Left (toText s)
 
-jsonEncodeText ::
-  ToJSON a =>
-  a ->
-  Text
-jsonEncodeText =
-  decodeUtf8 . jsonEncode
-{-# inline jsonEncodeText #-}
+jsonDecodeValue ::
+  FromJSON a =>
+  Value ->
+  Either Text a
+jsonDecodeValue =
+  mapLeft toText . aesonToEither . Aeson.fromJSON
+{-# inline jsonDecodeValue #-}
 
 as ::
   Functor m =>
