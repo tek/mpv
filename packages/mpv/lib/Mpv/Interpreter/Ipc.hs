@@ -99,6 +99,10 @@ interpretIpcWithQueue =
       liftT do
         cmd <- Commands.prop prop
         syncRequest cmd
+    Ipc.SetProp prop value -> do
+      liftT do
+        cmd <- Commands.setProp prop value
+        syncRequest cmd
 
 interpretIpc ::
   Members [Commands fmt command, Scoped (EventToken token) (Consume MpvEvent)] r =>

@@ -39,6 +39,7 @@ library
       Mpv.Data.Seek
       Mpv.Data.SeekFlags
       Mpv.Data.SubDelay
+      Mpv.Data.SubFps
       Mpv.Data.Subtitle
       Mpv.Data.SubtitleId
       Mpv.Data.Subtitles
@@ -228,7 +229,6 @@ test-suite mpv-unit
     , path
     , polysemy >=1.5
     , polysemy-conc
-    , polysemy-log
     , polysemy-log-co
     , polysemy-plugin >=0.3
     , polysemy-test

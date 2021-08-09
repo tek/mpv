@@ -24,11 +24,12 @@ instance All ToJSON as => ToJSON (CommandArgs as) where
     unCommandArgs
 
 data Command :: Type -> Type where
-  Manual :: (All ToJSON as, All (Compose Show I) as, FromJSON a) => Maybe EventName -> Text -> NP I as -> Command a
+  Manual :: (All ToJSON as, All (Compose Show I) as) => Maybe EventName -> Text -> NP I as -> Command Value
   Load :: Path Abs File -> Command Value
   Stop :: Command Value
   Seek :: Double -> SeekFlags -> Command Value
   Prop :: Property v -> Command v
+  SetProp :: Show v => Property v -> v -> Command ()
 
 deriving instance Show (Command a)
 
@@ -39,3 +40,4 @@ instance CommandEvent Command where
     Stop -> Just EndFile
     Seek _ _ -> Nothing
     Prop _ -> Nothing
+    SetProp _ _ -> Nothing

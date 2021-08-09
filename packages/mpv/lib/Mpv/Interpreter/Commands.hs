@@ -18,6 +18,7 @@ import Mpv.Seek (seekRestartArg, seekStyleArg)
 propertyName :: Property v -> Text
 propertyName = \case
   Property.Duration -> "duration"
+  Property.SubFps -> "subfps"
   Property.Custom name -> name
 
 encodeCommand ::
@@ -29,6 +30,15 @@ encodeCommand ::
   Value
 encodeCommand requestId cmd args async' =
   toJSON (Request requestId (CommandArgs (I cmd :* args)) async')
+
+encodeProp :: Property v -> v -> Value
+encodeProp = \case
+  Property.Custom _ ->
+    toJSON
+  Property.Duration ->
+    toJSON
+  Property.SubFps ->
+    toJSON
 
 mpvCommand :: RequestId -> Bool -> Command a -> Value
 mpvCommand requestId async' = \case
@@ -45,6 +55,8 @@ mpvCommand requestId async' = \case
     encodeCommand requestId name args async'
   Command.Prop prop ->
     encodeCommand requestId "get_property" (I (propertyName prop) :* Nil) async'
+  Command.SetProp prop value ->
+    encodeCommand requestId "set_property" (I (propertyName prop) :* I (encodeProp prop value) :* Nil) async'
 
 decodeProp ::
   Property v ->
@@ -54,6 +66,8 @@ decodeProp = \case
   Property.Custom _ ->
     jsonDecodeValue
   Property.Duration ->
+    jsonDecodeValue
+  Property.SubFps ->
     jsonDecodeValue
 
 decodeResult ::
@@ -71,6 +85,8 @@ decodeResult = \case
     jsonDecodeValue
   Command.Prop prop ->
     decodeProp prop
+  Command.SetProp _ _ ->
+    const unit
 
 decodeError :: Text -> ResponseError
 decodeError err =
@@ -85,3 +101,5 @@ interpretCommandsJson =
       pure (mapLeft decodeError (decodeResult cmd value))
     Commands.Prop prop ->
       pure (Command.Prop prop)
+    Commands.SetProp prop value ->
+      pure (Command.SetProp prop value)

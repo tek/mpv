@@ -1,6 +1,6 @@
 module Mpv.Interpreter.Mpv where
 
-import Polysemy.Conc (Race, interpretEventsChan)
+import Polysemy.Conc (ChanConsumer, EventConsumer, Race, interpretEventsChan)
 import Polysemy.Conc.Effect.Events (Consume, EventToken)
 import Polysemy.Conc.Effect.Scoped (Scoped, runScoped, scoped)
 import Polysemy.Log (Log)
@@ -44,9 +44,11 @@ interpretMpvIpc =
       restop (Ipc.async cmd)
     Mpv.Prop prop ->
       restop (Ipc.prop prop)
+    Mpv.SetProp prop value ->
+      restop (Ipc.setProp prop value)
 
 interpretMpvResources ::
-  Members [Scoped (EventToken token) (Consume MpvEvent), Resource, Async, Race, Log, Embed IO, Final IO] r =>
+  Members [EventConsumer token MpvEvent, Resource, Async, Race, Log, Embed IO, Final IO] r =>
   Either MpvError (MpvResources Value) ->
   InterpreterFor (Mpv Command !! MpvError) r
 interpretMpvResources = \case
@@ -57,14 +59,26 @@ interpretMpvResources = \case
 
 interpretMpvNative ::
   Members [Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
-  InterpreterFor (Scoped (Either MpvError (MpvResources Value)) (Mpv Command !! MpvError)) r
+  InterpretersFor [Scoped (Either MpvError (MpvResources Value)) (Mpv Command !! MpvError), ChanConsumer MpvEvent] r
 interpretMpvNative =
   interpretEventsChan .
   runScoped withIpc interpretMpvResources .
-  raiseUnder2
+  raiseUnder
 
 withMpv ::
   Member (Scoped resource (Mpv command !! MpvError)) r =>
   InterpreterFor (Mpv command !! MpvError) r
 withMpv =
   scoped
+
+events ::
+  Member (Scoped (EventToken token) (Consume MpvEvent)) r =>
+  InterpreterFor (Consume MpvEvent) r
+events =
+  scoped
+
+loopEvents ::
+  Member (Scoped (EventToken token) (Consume MpvEvent)) r =>
+  InterpreterFor (Consume MpvEvent) r
+loopEvents =
+  events . forever
