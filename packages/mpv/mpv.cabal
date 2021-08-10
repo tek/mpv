@@ -57,6 +57,7 @@ library
       Mpv.Interpreter.Commands
       Mpv.Interpreter.Ipc
       Mpv.Interpreter.Mpv
+      Mpv.Mpv
       Mpv.MpvResources
       Mpv.Prelude
       Mpv.Prelude.Debug

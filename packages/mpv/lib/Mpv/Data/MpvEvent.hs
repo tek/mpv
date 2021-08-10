@@ -7,6 +7,8 @@ data EventName =
   |
   EndFile
   |
+  Pause
+  |
   Custom Text
   deriving (Eq, Show, Generic)
 
@@ -14,6 +16,7 @@ eventNameText :: EventName -> Text
 eventNameText = \case
   FileLoaded -> "file-loaded"
   EndFile -> "end-file"
+  Pause -> "pause"
   Custom t -> t
 
 instance FromJSON EventName where
@@ -21,6 +24,7 @@ instance FromJSON EventName where
     withText "EventName" \case
       "file-loaded" -> pure FileLoaded
       "end-file" -> pure EndFile
+      "pause" -> pure Pause
       t -> pure (Custom t)
 
 instance ToJSON EventName where

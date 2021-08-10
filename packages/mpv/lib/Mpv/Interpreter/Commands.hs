@@ -5,8 +5,9 @@ import Prelude hiding (All)
 
 import qualified Mpv.Data.Command as Command
 import Mpv.Data.Command (Command, CommandArgs (CommandArgs))
+import qualified Mpv.Data.PlaybackState as PlaybackState
 import qualified Mpv.Data.Property as Property
-import Mpv.Data.Property (Property)
+import Mpv.Data.Property (Property, propertyName)
 import Mpv.Data.Request (Request (Request))
 import Mpv.Data.RequestId (RequestId)
 import Mpv.Data.Response (ResponseError (ResponseError))
@@ -14,12 +15,6 @@ import Mpv.Data.SeekFlags (SeekFlags (SeekFlags))
 import qualified Mpv.Effect.Commands as Commands
 import Mpv.Effect.Commands (Commands)
 import Mpv.Seek (seekRestartArg, seekStyleArg)
-
-propertyName :: Property v -> Text
-propertyName = \case
-  Property.Duration -> "duration"
-  Property.SubFps -> "subfps"
-  Property.Custom name -> name
 
 encodeCommand ::
   All ToJSON as =>
@@ -36,9 +31,17 @@ encodeProp = \case
   Property.Custom _ ->
     toJSON
   Property.Duration ->
-    toJSON
+    toJSON . toRational
   Property.SubFps ->
     toJSON
+  Property.TrackList ->
+    toJSON
+  Property.PercentPos ->
+    toJSON
+  Property.TimePos ->
+    toJSON
+  Property.Paused ->
+    toJSON . PlaybackState.toBool
 
 mpvCommand :: RequestId -> Bool -> Command a -> Value
 mpvCommand requestId async' = \case
@@ -58,6 +61,13 @@ mpvCommand requestId async' = \case
   Command.SetProp prop value ->
     encodeCommand requestId "set_property" (I (propertyName prop) :* I (encodeProp prop value) :* Nil) async'
 
+percentToRatio ::
+  Fractional a =>
+  Double ->
+  a
+percentToRatio pos =
+  fromRational (toRational (min 1 (max 0 (pos / 100))))
+
 decodeProp ::
   Property v ->
   Value ->
@@ -66,9 +76,17 @@ decodeProp = \case
   Property.Custom _ ->
     jsonDecodeValue
   Property.Duration ->
-    jsonDecodeValue
+    fmap fromRational . jsonDecodeValue
   Property.SubFps ->
     jsonDecodeValue
+  Property.TrackList ->
+    jsonDecodeValue
+  Property.PercentPos ->
+    fmap percentToRatio . jsonDecodeValue
+  Property.TimePos ->
+    fmap fromRational . jsonDecodeValue
+  Property.Paused ->
+    fmap PlaybackState.fromBool . jsonDecodeValue
 
 decodeResult ::
   Command a ->

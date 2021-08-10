@@ -14,10 +14,12 @@ import qualified Polysemy.Log as Log
 import Polysemy.Log (Log)
 import Polysemy.Time (Seconds (Seconds), TimeUnit)
 
+import qualified Mpv.Data.MpvError as MpvError
 import Mpv.Data.MpvError (MpvError (MpvError))
 import Mpv.Data.MpvEvent (EventName, MpvEvent (MpvEvent), eventNameText)
 import qualified Mpv.Data.MpvResources as MpvResources
 import Mpv.Data.MpvResources (MpvResources (MpvResources), OutMessage (OutMessage), Requests (Requests))
+import Mpv.Data.Property (Property, propertyName)
 import Mpv.Data.RequestId (RequestId)
 import Mpv.Data.Response (ResponseError (ResponseError))
 import qualified Mpv.Effect.Commands as Commands
@@ -82,6 +84,19 @@ waitEventAndRun name interval ma =
       Log.warn [exon|waiting for mpv event #{eventNameText name} failed|]
     pure (found, res)
 
+propError ::
+  Property v ->
+  MpvError ->
+  MpvError
+propError prop = \case
+  MpvError err ->
+    MpvError (amend err)
+  MpvError.Fatal err ->
+    MpvError.Fatal (amend err)
+  where
+    amend err =
+      [exon|setting #{show prop} ('#{propertyName prop}'): #{err}|]
+
 interpretIpcWithQueue ::
   Members [Commands fmt command, Scoped (EventToken token) (Consume MpvEvent)] r =>
   Members [Queue (OutMessage fmt) !! MpvError, AtomicState (Requests fmt), Log, Resource, Async, Race, Embed IO] r =>
@@ -98,7 +113,7 @@ interpretIpcWithQueue =
     Ipc.Prop prop ->
       liftT do
         cmd <- Commands.prop prop
-        syncRequest cmd
+        mapStop (propError prop) (syncRequest cmd)
     Ipc.SetProp prop value -> do
       liftT do
         cmd <- Commands.setProp prop value
