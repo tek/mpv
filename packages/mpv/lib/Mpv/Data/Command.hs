@@ -46,6 +46,7 @@ data Command :: Type -> Type where
   Seek :: Double -> SeekFlags -> Command EmptyResponse
   Prop :: Property v -> Command v
   SetProp :: Show v => Property v -> v -> Command ()
+  SetOption :: Text -> Text -> Command ()
 
 deriving instance Show (Command a)
 
@@ -57,3 +58,4 @@ instance CommandEvent Command where
     Seek _ _ -> Nothing
     Prop _ -> Nothing
     SetProp _ _ -> Nothing
+    SetOption _ _ -> Nothing

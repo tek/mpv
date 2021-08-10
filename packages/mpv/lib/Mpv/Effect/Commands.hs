@@ -9,5 +9,6 @@ data Commands (fmt :: Type) (command :: Type -> Type) :: Effect where
   Encode :: RequestId -> Bool -> command a -> Commands fmt command m fmt
   Prop :: Property v -> Commands fmt command m (command v)
   SetProp :: Show v => Property v -> v -> Commands fmt command m (command ())
+  SetOption :: Text -> Text -> Commands fmt command m (command ())
 
 makeSem ''Commands

@@ -17,6 +17,7 @@ import qualified Mpv.Effect.Mpv as Mpv
 import Mpv.Effect.Mpv (Mpv)
 import Mpv.Interpreter.Commands (interpretCommandsJson)
 import Mpv.Interpreter.Ipc (interpretIpc)
+import Mpv.MpvError (optionError)
 import Mpv.MpvResources (withIpc)
 
 waitEventCmd ::
@@ -46,6 +47,8 @@ interpretMpvIpc =
       restop (Ipc.prop prop)
     Mpv.SetProp prop value ->
       restop (Ipc.setProp prop value)
+    Mpv.SetOption key value ->
+      resumeHoist (optionError key value) (Ipc.setOption key value)
 
 interpretMpvResources ::
   Members [EventConsumer token MpvEvent, Resource, Async, Race, Log, Embed IO, Final IO] r =>

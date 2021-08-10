@@ -58,6 +58,7 @@ library
       Mpv.Interpreter.Ipc
       Mpv.Interpreter.Mpv
       Mpv.Mpv
+      Mpv.MpvError
       Mpv.MpvResources
       Mpv.Prelude
       Mpv.Prelude.Debug

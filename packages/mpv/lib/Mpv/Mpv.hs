@@ -7,6 +7,13 @@ import Mpv.Data.Property (Property)
 import qualified Mpv.Effect.Mpv as Mpv
 import Mpv.Effect.Mpv (Mpv)
 
+setDefaultOptions ::
+  Member (Mpv command) r =>
+  Sem r ()
+setDefaultOptions = do
+  Mpv.setOption "input-default-bindings" "yes"
+  Mpv.setOption "input-vo-keyboard" "yes"
+
 alterPropM ::
   Show v =>
   Member (Mpv command) r =>

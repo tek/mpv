@@ -19,7 +19,7 @@ import Mpv.Data.Track (Track (Track), TrackList (TrackList), TrackType (Audio, S
 import qualified Mpv.Effect.Mpv as Mpv
 import qualified Mpv.Interpreter.Mpv as Mpv
 import Mpv.Interpreter.Mpv (interpretMpvNative, withMpv)
-import Mpv.Mpv (pause)
+import Mpv.Mpv (pause, setDefaultOptions)
 
 trackList :: NonEmpty Track
 trackList =
@@ -39,6 +39,7 @@ test_loadFile =
       withMpv do
         resumeHoistError show do
           withAsync_ (Mpv.loopEvents (Log.debug . show =<< Conc.consume)) do
+            setDefaultOptions
             Mpv.command (Command.Load vid)
             assertEq 3.6 =<< Mpv.prop Property.Duration
             assertEq 0 =<< Mpv.prop Property.SubFps

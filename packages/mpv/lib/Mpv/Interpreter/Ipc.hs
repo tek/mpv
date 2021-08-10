@@ -14,18 +14,17 @@ import qualified Polysemy.Log as Log
 import Polysemy.Log (Log)
 import Polysemy.Time (Seconds (Seconds), TimeUnit)
 
-import qualified Mpv.Data.MpvError as MpvError
 import Mpv.Data.MpvError (MpvError (MpvError))
 import Mpv.Data.MpvEvent (EventName, MpvEvent (MpvEvent), eventNameText)
 import qualified Mpv.Data.MpvResources as MpvResources
 import Mpv.Data.MpvResources (MpvResources (MpvResources), OutMessage (OutMessage), Requests (Requests))
-import Mpv.Data.Property (Property, propertyName)
 import Mpv.Data.RequestId (RequestId)
 import Mpv.Data.Response (ResponseError (ResponseError))
 import qualified Mpv.Effect.Commands as Commands
 import Mpv.Effect.Commands (Commands)
 import qualified Mpv.Effect.Ipc as Ipc
 import Mpv.Effect.Ipc (Ipc)
+import Mpv.MpvError (propError)
 
 createRequest ::
   Members [AtomicState (Requests fmt), Embed IO] r =>
@@ -84,19 +83,6 @@ waitEventAndRun name interval ma =
       Log.warn [exon|waiting for mpv event #{eventNameText name} failed|]
     pure (found, res)
 
-propError ::
-  Property v ->
-  MpvError ->
-  MpvError
-propError prop = \case
-  MpvError err ->
-    MpvError (amend err)
-  MpvError.Fatal err ->
-    MpvError.Fatal (amend err)
-  where
-    amend err =
-      [exon|setting #{show prop} ('#{propertyName prop}'): #{err}|]
-
 interpretIpcWithQueue ::
   Members [Commands fmt command, Scoped (EventToken token) (Consume MpvEvent)] r =>
   Members [Queue (OutMessage fmt) !! MpvError, AtomicState (Requests fmt), Log, Resource, Async, Race, Embed IO] r =>
@@ -117,6 +103,10 @@ interpretIpcWithQueue =
     Ipc.SetProp prop value -> do
       liftT do
         cmd <- Commands.setProp prop value
+        syncRequest cmd
+    Ipc.SetOption key value ->
+      liftT do
+        cmd <- Commands.setOption key value
         syncRequest cmd
 
 interpretIpc ::

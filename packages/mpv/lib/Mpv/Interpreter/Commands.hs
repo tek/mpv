@@ -60,6 +60,8 @@ mpvCommand requestId async' = \case
     encodeCommand requestId "get_property" (I (propertyName prop) :* Nil) async'
   Command.SetProp prop value ->
     encodeCommand requestId "set_property" (I (propertyName prop) :* I (encodeProp prop value) :* Nil) async'
+  Command.SetOption key value ->
+    encodeCommand requestId "set" (I key :* I value :* Nil) async'
 
 percentToRatio ::
   Fractional a =>
@@ -105,6 +107,8 @@ decodeResult = \case
     decodeProp prop
   Command.SetProp _ _ ->
     const unit
+  Command.SetOption _ _ ->
+    const unit
 
 decodeError :: Text -> ResponseError
 decodeError err =
@@ -121,3 +125,5 @@ interpretCommandsJson =
       pure (Command.Prop prop)
     Commands.SetProp prop value ->
       pure (Command.SetProp prop value)
+    Commands.SetOption key value ->
+      pure (Command.SetOption key value)
