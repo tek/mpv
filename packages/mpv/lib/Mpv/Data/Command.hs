@@ -23,11 +23,27 @@ instance All ToJSON as => ToJSON (CommandArgs as) where
     hcmap (Proxy @ToJSON) (K .  toJSON .  unI) .
     unCommandArgs
 
+data LoadResponse =
+  LoadResponse {
+    playlist_entry_id :: Int
+  }
+  deriving (Eq, Show)
+
+deriveJSON basicOptions ''LoadResponse
+
+data EmptyResponse =
+  EmptyResponse
+  deriving (Eq, Show)
+
+instance FromJSON EmptyResponse where
+  parseJSON =
+    const (pure EmptyResponse)
+
 data Command :: Type -> Type where
   Manual :: (All ToJSON as, All (Compose Show I) as) => Maybe EventName -> Text -> NP I as -> Command Value
-  Load :: Path Abs File -> Command Value
-  Stop :: Command Value
-  Seek :: Double -> SeekFlags -> Command Value
+  Load :: Path Abs File -> Command LoadResponse
+  Stop :: Command EmptyResponse
+  Seek :: Double -> SeekFlags -> Command EmptyResponse
   Prop :: Property v -> Command v
   SetProp :: Show v => Property v -> v -> Command ()
 
