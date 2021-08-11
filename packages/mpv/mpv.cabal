@@ -67,6 +67,7 @@ library
       Mpv.Seek
       Mpv.Socket
       Mpv.SocketQueues
+      Mpv.Track
   other-modules:
       Prelude
   hs-source-dirs:
@@ -137,6 +138,7 @@ library
     , data-default
     , either
     , exon
+    , extra
     , lens
     , network
     , path
@@ -231,6 +233,7 @@ test-suite mpv-unit
     , path
     , polysemy >=1.5
     , polysemy-conc
+    , polysemy-log
     , polysemy-log-co
     , polysemy-plugin >=0.3
     , polysemy-test

@@ -8,7 +8,7 @@ import Polysemy.Conc (interpretRace, withAsync_)
 import qualified Polysemy.Log as Log
 import Polysemy.Log.Colog (interpretLogStdoutConc)
 import qualified Polysemy.Test as Test
-import Polysemy.Test (UnitTest, assertEq, runTestAuto)
+import Polysemy.Test (UnitTest, assertClose, assertEq, runTestAuto)
 import Polysemy.Time (Seconds (Seconds), interpretTimeGhc)
 
 import qualified Mpv.Data.Command as Command
@@ -19,7 +19,8 @@ import Mpv.Data.Track (Track (Track), TrackList (TrackList), TrackType (Audio, S
 import qualified Mpv.Effect.Mpv as Mpv
 import qualified Mpv.Interpreter.Mpv as Mpv
 import Mpv.Interpreter.Mpv (interpretMpvNative, withMpv)
-import Mpv.Mpv (pause, setDefaultOptions)
+import qualified Mpv.Mpv as Mpv
+import Mpv.Mpv (addAudioDelay, adjustVolumeBy, setDefaultOptions, togglePlaybackState)
 
 trackList :: NonEmpty Track
 trackList =
@@ -44,8 +45,13 @@ test_loadFile =
             assertEq 3.6 =<< Mpv.prop Property.Duration
             assertEq 0 =<< Mpv.prop Property.SubFps
             Mpv.setProp Property.SubFps 100
+            Mpv.setProp Property.SubDelay 1
             assertEq 100 =<< Mpv.prop Property.SubFps
             assertEq trackList . NonEmpty.sort . coerce =<< Mpv.prop Property.TrackList
-            void pause
+            void Mpv.info
+            void togglePlaybackState
+            Mpv.setProp Property.Volume 100
+            assertClose 95 =<< adjustVolumeBy (-5)
+            void (addAudioDelay 5)
             Mpv.command (Command.Seek 50 (SeekFlags Absolute SeekFlags.Percent Exact))
             void $ Mpv.command Command.Stop

@@ -4,26 +4,37 @@ import qualified Mpv.Data.MpvError as MpvError
 import Mpv.Data.MpvError (MpvError (MpvError))
 import Mpv.Data.Property (Property, propertyName)
 
-propError ::
-  Property v ->
+amendError ::
+  Text ->
   MpvError ->
   MpvError
-propError prop = \case
+amendError info = \case
   MpvError err ->
     MpvError (amend err)
   MpvError.Fatal err ->
     MpvError.Fatal (amend err)
   where
     amend err =
-      [exon|setting #{show prop} ('#{propertyName prop}'): #{err}|]
+      [exon|#{info}: #{err}|]
+
+propError ::
+  Property v ->
+  MpvError ->
+  MpvError
+propError prop =
+  amendError [exon|getting #{show prop} ('#{propertyName prop}')|]
+
+setPropError ::
+  Property v ->
+  MpvError ->
+  MpvError
+setPropError prop =
+  amendError [exon|setting #{show prop} ('#{propertyName prop}')|]
 
 optionError ::
   Text ->
   Text ->
   MpvError ->
   MpvError
-optionError key value = \case
-  MpvError err ->
-    MpvError [exon|#{key} -> #{value}: #{err}|]
-  e ->
-    e
+optionError key value =
+  amendError [exon|#{key} -> #{value}|]

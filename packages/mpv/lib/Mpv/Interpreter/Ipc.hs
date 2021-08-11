@@ -24,7 +24,7 @@ import qualified Mpv.Effect.Commands as Commands
 import Mpv.Effect.Commands (Commands)
 import qualified Mpv.Effect.Ipc as Ipc
 import Mpv.Effect.Ipc (Ipc)
-import Mpv.MpvError (propError)
+import Mpv.MpvError (propError, setPropError)
 
 createRequest ::
   Members [AtomicState (Requests fmt), Embed IO] r =>
@@ -103,7 +103,7 @@ interpretIpcWithQueue =
     Ipc.SetProp prop value -> do
       liftT do
         cmd <- Commands.setProp prop value
-        syncRequest cmd
+        mapStop (setPropError prop) (syncRequest cmd)
     Ipc.SetOption key value ->
       liftT do
         cmd <- Commands.setOption key value

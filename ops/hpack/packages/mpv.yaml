@@ -18,6 +18,7 @@ library:
     - data-default
     - either
     - exon
+    - extra
     - lens
     - network
     - path
@@ -51,6 +52,7 @@ tests:
       - path
       - polysemy >= 1.5
       - polysemy-conc
+      - polysemy-log
       - polysemy-log-co
       - polysemy-plugin >= 0.3
       - polysemy-test

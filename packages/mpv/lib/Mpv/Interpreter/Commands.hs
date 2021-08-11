@@ -1,6 +1,8 @@
 module Mpv.Interpreter.Commands where
 
 import Data.SOP (All, I (I), NP (Nil, (:*)))
+import Polysemy.Time (TimeUnit, convert)
+import Polysemy.Time.Data.TimeUnit (unNanoSeconds)
 import Prelude hiding (All)
 
 import qualified Mpv.Data.Command as Command
@@ -12,9 +14,35 @@ import Mpv.Data.Request (Request (Request))
 import Mpv.Data.RequestId (RequestId)
 import Mpv.Data.Response (ResponseError (ResponseError))
 import Mpv.Data.SeekFlags (SeekFlags (SeekFlags))
+import Mpv.Data.VideoDuration (unVideoDuration)
 import qualified Mpv.Effect.Commands as Commands
 import Mpv.Effect.Commands (Commands)
 import Mpv.Seek (seekRestartArg, seekStyleArg)
+import Mpv.Data.VideoExpired (unVideoExpired)
+import Mpv.Data.AudioDelay (unAudioDelay)
+import Mpv.Data.SubDelay (unSubDelay)
+import Mpv.Data.Volume (unVolume)
+
+percentToRatio ::
+  Fractional a =>
+  Double ->
+  a
+percentToRatio pos =
+  fromRational (toRational (min 1 (max 0 (pos / 100))))
+
+ratioToPercent ::
+  Real a =>
+  a ->
+  Double
+ratioToPercent pos =
+  fromRational (toRational (min 100 (max 0 (pos * 100))))
+
+secondsFrac ::
+  TimeUnit u =>
+  u ->
+  Double
+secondsFrac u =
+  fromIntegral (unNanoSeconds (convert u)) / 1e9
 
 encodeCommand ::
   All ToJSON as =>
@@ -31,17 +59,23 @@ encodeProp = \case
   Property.Custom _ ->
     toJSON
   Property.Duration ->
-    toJSON . toRational
+    toJSON . secondsFrac . unVideoDuration
   Property.SubFps ->
     toJSON
+  Property.SubDelay ->
+    toJSON . secondsFrac . unSubDelay
+  Property.AudioDelay ->
+    toJSON . secondsFrac . unAudioDelay
   Property.TrackList ->
     toJSON
   Property.PercentPos ->
-    toJSON
+    toJSON . ratioToPercent
   Property.TimePos ->
-    toJSON
+    toJSON . secondsFrac . unVideoExpired
   Property.Paused ->
     toJSON . PlaybackState.toBool
+  Property.Volume ->
+    toJSON . unVolume
 
 mpvCommand :: RequestId -> Bool -> Command a -> Value
 mpvCommand requestId async' = \case
@@ -63,13 +97,6 @@ mpvCommand requestId async' = \case
   Command.SetOption key value ->
     encodeCommand requestId "set" (I key :* I value :* Nil) async'
 
-percentToRatio ::
-  Fractional a =>
-  Double ->
-  a
-percentToRatio pos =
-  fromRational (toRational (min 1 (max 0 (pos / 100))))
-
 decodeProp ::
   Property v ->
   Value ->
@@ -81,6 +108,10 @@ decodeProp = \case
     fmap fromRational . jsonDecodeValue
   Property.SubFps ->
     jsonDecodeValue
+  Property.SubDelay ->
+    fmap fromRational . jsonDecodeValue
+  Property.AudioDelay ->
+    fmap fromRational . jsonDecodeValue
   Property.TrackList ->
     jsonDecodeValue
   Property.PercentPos ->
@@ -89,6 +120,8 @@ decodeProp = \case
     fmap fromRational . jsonDecodeValue
   Property.Paused ->
     fmap PlaybackState.fromBool . jsonDecodeValue
+  Property.Volume ->
+    jsonDecodeValue
 
 decodeResult ::
   Command a ->
