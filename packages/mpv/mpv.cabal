@@ -167,9 +167,9 @@ test-suite mpv-unit
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
-      Mpv.Test.AsyncTest
-      Mpv.Test.LoadTest
       Mpv.Test.MessageSplitTest
+      Mpv.Test.MpvTest
+      Mpv.Test.ServerTest
       Paths_mpv
   hs-source-dirs:
       test

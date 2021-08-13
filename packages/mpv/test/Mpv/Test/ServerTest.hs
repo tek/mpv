@@ -1,4 +1,4 @@
-module Mpv.Test.AsyncTest where
+module Mpv.Test.ServerTest where
 
 import Path (File, Rel, relfile)
 import qualified Polysemy.Conc as Race
@@ -15,8 +15,8 @@ import qualified Mpv.Effect.Mpv as Mpv
 import Mpv.Interpreter.Mpv (interpretMpvNative)
 import Mpv.Interpreter.MpvServer (withMpvClient, withMpvServer)
 
-test_async :: UnitTest
-test_async =
+test_server :: UnitTest
+test_server =
   (runTestAuto . asyncToIOFinal . interpretRace . interpretLogStdoutConc . interpretTimeGhc . interpretMpvNative) do
     vid <- Test.fixturePath [relfile|vid.mkv|]
     duration <- Race.timeout () (Seconds 4) do

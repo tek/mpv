@@ -1,4 +1,4 @@
-module Mpv.Test.LoadTest where
+module Mpv.Test.MpvTest where
 
 import qualified Data.List.NonEmpty as NonEmpty
 import Path (File, Rel, relfile)
@@ -32,8 +32,8 @@ trackList =
     Track (Just 2) True Nothing Audio
   ]
 
-test_loadFile :: UnitTest
-test_loadFile =
+test_mpv :: UnitTest
+test_mpv =
   (runTestAuto . asyncToIOFinal . interpretRace . interpretLogStdoutConc . interpretTimeGhc . interpretMpvNative) do
     vid <- Test.fixturePath [relfile|vid.mkv|]
     Race.timeout_ () (Seconds 4) do
