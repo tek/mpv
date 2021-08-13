@@ -3,7 +3,7 @@ module Mpv.Socket where
 import qualified Network.Socket as Socket
 import Network.Socket (SockAddr (SockAddrUnix), Socket)
 import Path (Abs, File, Path, toFilePath)
-import Polysemy.Conc (Race, retryingWithError)
+import Polysemy.Conc (retryingWithError)
 import Polysemy.Resource (bracket)
 import Polysemy.Time (MilliSeconds (MilliSeconds), Seconds (Seconds), Time)
 

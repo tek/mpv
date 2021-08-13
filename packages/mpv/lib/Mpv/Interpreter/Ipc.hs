@@ -5,15 +5,15 @@ import Polysemy (runTSimple)
 import Polysemy.AtomicState (atomicState')
 import qualified Polysemy.Conc as Race
 import qualified Polysemy.Conc as Events
-import Polysemy.Conc (Queue, Race, withAsync)
+import Polysemy.Conc (ChanConsumer, EventConsumer, Queue, interpretEventsChan, withAsync)
 import qualified Polysemy.Conc.Data.Queue as Queue
-import Polysemy.Conc.Effect.Events (Consume, EventToken)
-import Polysemy.Conc.Effect.Scoped (Scoped)
+import Polysemy.Conc.Effect.Scoped (Scoped, runScoped, scoped)
 import Polysemy.Conc.Interpreter.Queue.TBM (interpretQueueTBMWith)
 import qualified Polysemy.Log as Log
 import Polysemy.Log (Log)
-import Polysemy.Time (Seconds (Seconds), TimeUnit)
+import Polysemy.Time (Seconds (Seconds), Time, TimeUnit)
 
+import Mpv.Data.Command (Command)
 import Mpv.Data.MpvError (MpvError (MpvError))
 import Mpv.Data.MpvEvent (EventName, MpvEvent (MpvEvent), eventNameText)
 import qualified Mpv.Data.MpvResources as MpvResources
@@ -24,7 +24,8 @@ import qualified Mpv.Effect.Commands as Commands
 import Mpv.Effect.Commands (Commands)
 import qualified Mpv.Effect.Ipc as Ipc
 import Mpv.Effect.Ipc (Ipc)
-import Mpv.MpvError (propError, setPropError)
+import Mpv.Interpreter.Commands (interpretCommandsJson)
+import Mpv.MpvResources (withMpvResources)
 
 createRequest ::
   Members [AtomicState (Requests fmt), Embed IO] r =>
@@ -56,7 +57,7 @@ syncRequest cmd = do
   stopEitherWith (MpvError . coerce) =<< Commands.decode cmd fmt
 
 waitEvent ::
-  Members [Scoped (EventToken token) (Consume MpvEvent), Log] r =>
+  Member (EventConsumer token MpvEvent) r =>
   EventName ->
   Sem r Value
 waitEvent target =
@@ -68,8 +69,7 @@ waitEvent target =
 
 waitEventAndRun ::
   TimeUnit u =>
-  Member (Scoped (EventToken token) (Consume MpvEvent)) r =>
-  Members [Queue (OutMessage fmt) !! MpvError, AtomicState (Requests fmt), Log, Resource, Async, Race, Embed IO] r =>
+  Members [EventConsumer token MpvEvent, Log, Resource, Async, Race] r =>
   EventName ->
   u ->
   Sem r a ->
@@ -84,33 +84,19 @@ waitEventAndRun name interval ma =
     pure (found, res)
 
 interpretIpcWithQueue ::
-  Members [Commands fmt command, Scoped (EventToken token) (Consume MpvEvent)] r =>
+  Members [Commands fmt command, EventConsumer token MpvEvent] r =>
   Members [Queue (OutMessage fmt) !! MpvError, AtomicState (Requests fmt), Log, Resource, Async, Race, Embed IO] r =>
   InterpreterFor (Ipc fmt command !! MpvError) r
 interpretIpcWithQueue =
   interpretResumableH \case
     Ipc.Sync cmd -> do
       liftT (syncRequest cmd)
-    Ipc.Async _ ->
-      undefined
     Ipc.WaitEvent name interval ma -> do
       (found, res) <- waitEventAndRun name interval (runTSimple ma)
       pure ((found,) <$> res)
-    Ipc.Prop prop ->
-      liftT do
-        cmd <- Commands.prop prop
-        mapStop (propError prop) (syncRequest cmd)
-    Ipc.SetProp prop value -> do
-      liftT do
-        cmd <- Commands.setProp prop value
-        mapStop (setPropError prop) (syncRequest cmd)
-    Ipc.SetOption key value ->
-      liftT do
-        cmd <- Commands.setOption key value
-        syncRequest cmd
 
 interpretIpc ::
-  Members [Commands fmt command, Scoped (EventToken token) (Consume MpvEvent)] r =>
+  Members [Commands fmt command, EventConsumer token MpvEvent] r =>
   Members [Log, Resource, Async, Race, Embed IO] r =>
   MpvResources fmt ->
   InterpreterFor (Ipc fmt command !! MpvError) r
@@ -119,3 +105,30 @@ interpretIpc MpvResources{requests, outQueue} =
   resumable (interpretQueueTBMWith outQueue) .
   interpretIpcWithQueue .
   raiseUnder2
+
+interpretIpcResources ::
+  Members [EventConsumer token MpvEvent, Resource, Async, Race, Log, Embed IO, Final IO] r =>
+  Either MpvError (MpvResources Value) ->
+  InterpreterFor (Ipc Value Command !! MpvError) r
+interpretIpcResources = \case
+  Right res ->
+    interpretCommandsJson . interpretIpc res . raiseUnder
+  Left err ->
+    interpretResumableH \ _ -> stop err
+
+interpretIpcNative ::
+  Members [Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
+  InterpretersFor [
+    Scoped (Either MpvError (MpvResources Value)) (Ipc Value Command !! MpvError),
+    ChanConsumer MpvEvent
+  ] r
+interpretIpcNative =
+  interpretEventsChan .
+  runScoped withMpvResources interpretIpcResources .
+  raiseUnder
+
+withIpc ::
+  Member (Scoped resource (Ipc fmt command !! MpvError)) r =>
+  InterpreterFor (Ipc fmt command !! MpvError) r
+withIpc =
+  scoped

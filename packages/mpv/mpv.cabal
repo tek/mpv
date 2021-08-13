@@ -18,6 +18,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      Mpv
       Mpv.Class.CommandEvent
       Mpv.Data.AudioDelay
       Mpv.Data.AudioId
@@ -54,9 +55,11 @@ library
       Mpv.Effect.Commands
       Mpv.Effect.Ipc
       Mpv.Effect.Mpv
+      Mpv.Effect.MpvServer
       Mpv.Interpreter.Commands
       Mpv.Interpreter.Ipc
       Mpv.Interpreter.Mpv
+      Mpv.Interpreter.MpvServer
       Mpv.Mpv
       Mpv.MpvError
       Mpv.MpvResources
@@ -164,6 +167,7 @@ test-suite mpv-unit
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
+      Mpv.Test.AsyncTest
       Mpv.Test.LoadTest
       Mpv.Test.MessageSplitTest
       Paths_mpv

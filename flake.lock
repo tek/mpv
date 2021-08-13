@@ -347,11 +347,11 @@
         "hix": "hix_2"
       },
       "locked": {
-        "lastModified": 1628546065,
-        "narHash": "sha256-RlvYLfTLv19iUCoV5TnHAgho219Rsc8hmbn4rM/fIQo=",
+        "lastModified": 1628886704,
+        "narHash": "sha256-zA4ajUn81Ezgov8JkMzsSmmvtyfUl1P78pDdjJ8L3eU=",
         "owner": "tek",
         "repo": "polysemy-conc",
-        "rev": "f8d08f95c1cd8e1f3cc5886cc280df6481eda7e6",
+        "rev": "72c468c1081848060c8595a9e1f702a29c641964",
         "type": "github"
       },
       "original": {

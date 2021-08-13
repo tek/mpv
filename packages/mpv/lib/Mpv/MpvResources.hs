@@ -3,7 +3,7 @@ module Mpv.MpvResources where
 import Control.Concurrent.STM.TBMQueue (TBMQueue)
 import Network.Socket (Socket)
 import Polysemy (insertAt)
-import Polysemy.Conc (Events, Race, withAsync_)
+import Polysemy.Conc (Events, withAsync_)
 import Polysemy.Conc.Interpreter.Queue.TBM (withTBMQueue)
 import Polysemy.Log (Log)
 import Polysemy.Time (Time)
@@ -53,11 +53,11 @@ withSTMResources action = do
   reqs <- embed (newTVarIO (Requests 0 mempty))
   withTBMQueue 64 \ outQ -> withTBMQueue 64 \ inQ -> action outQ inQ reqs
 
-withIpc ::
+withMpvResources ::
   Members [Events token MpvEvent, Resource, Race, Async, Log, Time t d, Embed IO, Final IO] r =>
   (Either MpvError (MpvResources Value) -> Sem r a) ->
   Sem r a
-withIpc run =
+withMpvResources run =
   withMpvSocket \case
     Right socket ->
       withSTMResources (withIpcIO (run . Right) socket)

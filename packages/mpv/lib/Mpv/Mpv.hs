@@ -10,6 +10,7 @@ import Mpv.Data.Volume (Volume)
 import qualified Mpv.Effect.Mpv as Mpv
 import Mpv.Effect.Mpv (Mpv)
 import Mpv.Track (tracks)
+import Mpv.Data.SubDelay (SubDelay)
 
 setDefaultOptions ::
   Member (Mpv command) r =>
@@ -69,3 +70,10 @@ addAudioDelay ::
   Sem r AudioDelay
 addAudioDelay delta =
   alterProp Property.AudioDelay (delta +)
+
+addSubDelay ::
+  Member (Mpv commmand) r =>
+  SubDelay ->
+  Sem r SubDelay
+addSubDelay delta =
+  alterProp Property.SubDelay (delta +)

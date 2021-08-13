@@ -18,6 +18,7 @@ module Mpv.Prelude (
   module Polysemy,
   module Polysemy.Async,
   module Polysemy.AtomicState,
+  module Polysemy.Conc,
   module Polysemy.Error,
   module Polysemy.Internal.Tactics,
   module Polysemy.Reader,
@@ -72,6 +73,7 @@ import Polysemy (
   )
 import Polysemy.Async (Async, async, asyncToIO, asyncToIOFinal, await, sequenceConcurrently)
 import Polysemy.AtomicState (AtomicState, atomicGet, atomicGets, atomicModify', atomicPut, runAtomicStateTVar)
+import Polysemy.Conc (Race)
 import Polysemy.Error (Error, fromEither, fromExceptionVia, mapError, note, runError, throw)
 import Polysemy.Internal.Kind (Append)
 import Polysemy.Internal.Tactics (liftT)
