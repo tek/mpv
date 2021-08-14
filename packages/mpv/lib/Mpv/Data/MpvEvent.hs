@@ -1,41 +1,40 @@
 module Mpv.Data.MpvEvent where
 
-import Data.Aeson (withText)
+import Data.Aeson ((.:))
+import Data.Aeson.Types (withObject)
+import Data.Some (Some (Some))
 
-data EventName =
-  FileLoaded
-  |
-  EndFile
-  |
-  Pause
-  |
-  Custom Text
-  deriving (Eq, Show, Generic)
-
-eventNameText :: EventName -> Text
-eventNameText = \case
-  FileLoaded -> "file-loaded"
-  EndFile -> "end-file"
-  Pause -> "pause"
-  Custom t -> t
-
-instance FromJSON EventName where
-  parseJSON =
-    withText "EventName" \case
-      "file-loaded" -> pure FileLoaded
-      "end-file" -> pure EndFile
-      "pause" -> pure Pause
-      t -> pure (Custom t)
-
-instance ToJSON EventName where
-  toJSON =
-    toJSON . eventNameText
+import qualified Mpv.Data.Event as Event
+import Mpv.Data.Event (Event)
+import qualified Mpv.Data.EventName as EventName
+import Mpv.Data.EventName (EventName)
+import Prelude hiding ((.:))
 
 data MpvEvent =
   MpvEvent {
-    event :: EventName,
-    payload :: Value
+    name :: EventName,
+    payload :: Some Event
   }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
-defaultJson ''MpvEvent
+instance FromJSON MpvEvent where
+  parseJSON value =
+    withObject "MpvEvent" parse value
+    where
+      parse o = do
+        name <- o .: "event"
+        pl <- payload name
+        pure (MpvEvent name pl)
+      payload = \case
+        EventName.FileLoaded ->
+          pure (Some Event.FileLoaded)
+        EventName.EndFile ->
+          Some . Event.EndFile <$> parseJSON value
+        EventName.Pause ->
+          pure (Some Event.Pause)
+        EventName.Other _ ->
+          pure (Some (Event.Unknown value))
+        EventName.Unknown ->
+          pure (Some (Event.Unknown value))
+
+instance ToJSON MpvEvent where

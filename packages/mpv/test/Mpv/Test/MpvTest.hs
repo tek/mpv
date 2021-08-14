@@ -39,7 +39,7 @@ test_mpv =
     Race.timeout_ () (Seconds 4) do
       withMpv do
         resumeHoistError show do
-          withAsync_ (Mpv.loopEvents (Log.debug . show =<< Conc.consume)) do
+          withAsync_ (subscribeLoop (Log.debug . show)) do
             setDefaultOptions
             Mpv.command (Command.Load vid)
             assertEq 3.6 =<< Mpv.prop Property.Duration

@@ -1,6 +1,7 @@
 -- |Description: Mpv Client/Server Interpreters
 module Mpv.Interpreter.MpvServer where
 
+import Data.Some (withSome)
 import Polysemy (runTSimple)
 import qualified Polysemy.Conc as Conc
 import Polysemy.Conc (ChanConsumer, EventConsumer, Queue, interpretQueueTBM, withAsync_)
@@ -12,6 +13,9 @@ import Polysemy.Log (Log)
 import Polysemy.Time (Time)
 
 import Mpv.Data.Command (Command)
+import qualified Mpv.Data.Event as Event
+import qualified Mpv.Data.EventPayload as EventPayload
+import qualified Mpv.Data.EventPayload as EndReason
 import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvEvent (MpvEvent (MpvEvent))
 import qualified Mpv.Effect.Ipc as Ipc
@@ -22,7 +26,6 @@ import Mpv.Effect.MpvServer (MpvServer)
 import Mpv.Interpreter.Commands (interpretCommandsJson)
 import Mpv.Interpreter.Ipc (interpretIpcNative, waitEventAndRun, withIpc)
 import Mpv.Interpreter.Mpv (interpretMpvIpc)
-import qualified Mpv.Data.MpvEvent as MpvEvent
 
 data Control command where
   SendCommand :: command a -> MVar (Either MpvError a) -> Control command
@@ -73,11 +76,15 @@ serverEventListener ::
   Sem r ()
 serverEventListener =
   Conc.subscribeLoop \case
-    MpvEvent MpvEvent.EndFile _ ->
-      resume MpvServer.terminate \ e ->
-        Log.warn [exon|mpv server event listener: failed to send Terminate: #{show e}|]
-    _ ->
-      unit
+    MpvEvent _ payload ->
+      withSome payload \case
+        Event.EndFile (EventPayload.EndFile _ EndReason.Stop) ->
+          unit
+        Event.EndFile _ ->
+          resume MpvServer.terminate \ e ->
+            Log.warn [exon|mpv server event listener: failed to send Terminate: #{show e}|]
+        _ ->
+          unit
 
 interpretMpvServer ::
   Members [Queue (Control Command), Embed IO] r =>

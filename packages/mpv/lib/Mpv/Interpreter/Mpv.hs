@@ -82,9 +82,3 @@ events ::
   InterpreterFor (Consume MpvEvent) r
 events =
   scoped
-
-loopEvents ::
-  Member (Scoped (EventToken token) (Consume MpvEvent)) r =>
-  InterpreterFor (Consume MpvEvent) r
-loopEvents =
-  events . forever

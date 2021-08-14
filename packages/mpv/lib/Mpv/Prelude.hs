@@ -176,9 +176,9 @@ jsonOptions =
 
 untaggedOptions :: Aeson.Options
 untaggedOptions =
-  basicOptions {
+  jsonOptions {
     Aeson.sumEncoding = UntaggedValue
-    }
+  }
 
 defaultJson :: TH.Name -> TH.Q [TH.Dec]
 defaultJson =

@@ -1,6 +1,6 @@
 module Mpv.Data.Message where
 
-import Mpv.Data.MpvEvent (EventName)
+import Mpv.Data.MpvEvent (MpvEvent)
 
 data Message =
   ResponseMessage {
@@ -9,8 +9,6 @@ data Message =
     _data :: Maybe Value
   }
   |
-  ResponseEvent {
-    event :: EventName
-  }
+  ResponseEvent MpvEvent
 
 deriveJSON untaggedOptions ''Message

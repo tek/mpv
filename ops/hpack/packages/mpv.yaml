@@ -16,6 +16,7 @@ library:
     - composition
     - containers
     - data-default
+    - dependent-sum-template
     - either
     - exon
     - extra
@@ -31,6 +32,7 @@ library:
     - polysemy-time
     - process
     - relude
+    - some
     - sop-core
     - stm-chans
     - template-haskell

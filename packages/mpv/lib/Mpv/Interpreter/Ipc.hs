@@ -1,6 +1,7 @@
 module Mpv.Interpreter.Ipc where
 
 import qualified Data.Map.Strict as Map
+import Data.Some (Some)
 import Polysemy (runTSimple)
 import Polysemy.AtomicState (atomicState')
 import qualified Polysemy.Conc as Race
@@ -14,8 +15,10 @@ import Polysemy.Log (Log)
 import Polysemy.Time (Seconds (Seconds), Time, TimeUnit)
 
 import Mpv.Data.Command (Command)
+import Mpv.Data.Event (Event)
+import Mpv.Data.EventName (EventName, eventNameText)
 import Mpv.Data.MpvError (MpvError (MpvError))
-import Mpv.Data.MpvEvent (EventName, MpvEvent (MpvEvent), eventNameText)
+import Mpv.Data.MpvEvent (MpvEvent (MpvEvent))
 import qualified Mpv.Data.MpvResources as MpvResources
 import Mpv.Data.MpvResources (MpvResources (MpvResources), OutMessage (OutMessage), Requests (Requests))
 import Mpv.Data.RequestId (RequestId)
@@ -59,7 +62,7 @@ syncRequest cmd = do
 waitEvent ::
   Member (EventConsumer token MpvEvent) r =>
   EventName ->
-  Sem r Value
+  Sem r (Some Event)
 waitEvent target =
   Events.subscribe spin
   where
@@ -73,7 +76,7 @@ waitEventAndRun ::
   EventName ->
   u ->
   Sem r a ->
-  Sem r (Maybe Value, a)
+  Sem r (Maybe (Some Event), a)
 waitEventAndRun name interval ma =
   withAsync (waitEvent name) \ handle -> do
     res <- ma

@@ -10,7 +10,7 @@ import qualified Polysemy.Log as Log
 import Polysemy.Log (Log)
 
 import Mpv.Data.Message (Message (ResponseEvent, ResponseMessage))
-import Mpv.Data.MpvEvent (MpvEvent (MpvEvent))
+import Mpv.Data.MpvEvent (MpvEvent)
 import Mpv.Data.MpvResources (InMessage (InMessage, InMessageError), Requests (Requests))
 import Mpv.Data.RequestId (RequestId (RequestId))
 import Mpv.Data.Response (Response (Response), ResponseError (ResponseError))
@@ -22,21 +22,20 @@ decodePayload err _ =
   Left (ResponseError err)
 
 decodeMessage ::
-  Value ->
   Message ->
   Either MpvEvent (Response Value)
-decodeMessage payload = \case
+decodeMessage = \case
   ResponseMessage requestId err value ->
     Right (Response (RequestId requestId) (decodePayload err value))
-  ResponseEvent name ->
-    Left (MpvEvent name payload)
+  ResponseEvent event ->
+    Left event
 
 decodeInMessage ::
   InMessage Value ->
   Either Text (Either MpvEvent (Response Value))
 decodeInMessage (InMessage msg) = do
   message <- aesonToEither (fromJSON msg)
-  pure (decodeMessage msg message)
+  pure (decodeMessage message)
 decodeInMessage (InMessageError err) =
   Left err
 

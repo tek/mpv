@@ -6,7 +6,7 @@ import Path (Abs, File, Path)
 import Prelude hiding (All, Compose, Stop)
 
 import Mpv.Class.CommandEvent (CommandEvent (..))
-import Mpv.Data.MpvEvent (EventName (EndFile, FileLoaded))
+import Mpv.Data.EventName (EventName (EndFile, FileLoaded))
 import Mpv.Data.Property (Property)
 import Mpv.Data.SeekFlags (SeekFlags)
 

@@ -25,6 +25,9 @@ library
       Mpv.Data.AudioTrack
       Mpv.Data.AudioTracks
       Mpv.Data.Command
+      Mpv.Data.Event
+      Mpv.Data.EventName
+      Mpv.Data.EventPayload
       Mpv.Data.Message
       Mpv.Data.MpvError
       Mpv.Data.MpvEvent
@@ -139,6 +142,7 @@ library
     , composition
     , containers
     , data-default
+    , dependent-sum-template
     , either
     , exon
     , extra
@@ -154,6 +158,7 @@ library
     , polysemy-time
     , process
     , relude
+    , some
     , sop-core
     , stm-chans
     , template-haskell
@@ -167,6 +172,7 @@ test-suite mpv-unit
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
+      Mpv.Test.LoadTwiceTest
       Mpv.Test.MessageSplitTest
       Mpv.Test.MpvTest
       Mpv.Test.ServerTest
