@@ -54,12 +54,12 @@ tests:
       - path
       - polysemy >= 1.5
       - polysemy-conc
-      - polysemy-log
       - polysemy-log-co
       - polysemy-plugin >= 0.3
       - polysemy-test
       - polysemy-time
       - tasty
+      - tasty-expected-failure
 
 ghc-options:
   - -Wall

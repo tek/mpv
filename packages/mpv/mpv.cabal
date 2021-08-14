@@ -175,7 +175,6 @@ test-suite mpv-unit
   type: exitcode-stdio-1.0
   main-is: Main.hs
   other-modules:
-      Mpv.Test.LoadTwiceTest
       Mpv.Test.MessageSplitTest
       Mpv.Test.MpvTest
       Mpv.Test.ServerTest
@@ -247,12 +246,12 @@ test-suite mpv-unit
     , path
     , polysemy >=1.5
     , polysemy-conc
-    , polysemy-log
     , polysemy-log-co
     , polysemy-plugin >=0.3
     , polysemy-test
     , polysemy-time
     , tasty
+    , tasty-expected-failure
   mixins:
       base hiding (Prelude)
     , mpv hiding (Mpv.Prelude)
