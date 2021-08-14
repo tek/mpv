@@ -45,6 +45,7 @@ data VideoPlayer (meta :: Type) :: Effect where
   SetAudioDelay :: AudioDelay -> VideoPlayer meta m ()
   AddAudioDelay :: AudioDelay -> VideoPlayer meta m AudioDelay
   Duration :: VideoPlayer meta m VideoDuration
+  SetOption :: Text -> Text -> VideoPlayer meta m ()
 
 makeSem ''VideoPlayer
 

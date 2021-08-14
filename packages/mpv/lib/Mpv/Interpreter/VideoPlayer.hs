@@ -93,6 +93,8 @@ interpretVideoPlayerMpvAtomic =
       hoistError (adjustVolumeBy delta)
     VideoPlayer.Duration ->
       hoistError (Mpv.prop Property.Duration)
+    VideoPlayer.SetOption key value ->
+      hoistError (Mpv.setOption key value)
 
 interpretVideoPlayer ::
   ∀ meta token r .
