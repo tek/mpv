@@ -1,5 +1,6 @@
 module Mpv.Track where
 
+import Control.Lens (_1, _2, _3, view)
 import Data.List.Extra (firstJust)
 
 import Mpv.Data.AudioId (AudioId (AudioId))
@@ -63,3 +64,21 @@ tracks ::
 tracks = do
   TrackList allTracks <- Mpv.prop Property.TrackList
   pure (splitTracks (toList allTracks))
+
+videoTracks ::
+  Member (Mpv commmand) r =>
+  Sem r VideoTracks
+videoTracks =
+  view _1 <$> tracks
+
+audioTracks ::
+  Member (Mpv commmand) r =>
+  Sem r AudioTracks
+audioTracks =
+  view _2 <$> tracks
+
+subtitles ::
+  Member (Mpv commmand) r =>
+  Sem r Subtitles
+subtitles =
+  view _3 <$> tracks

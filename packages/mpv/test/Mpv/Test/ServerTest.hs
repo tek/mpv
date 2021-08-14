@@ -12,22 +12,18 @@ import qualified Mpv.Data.Command as Command
 import Mpv.Data.Command (LoadResponse (LoadResponse))
 import qualified Mpv.Data.Property as Property
 import qualified Mpv.Effect.Mpv as Mpv
-import Mpv.Interpreter.Mpv (interpretMpvNative)
-import Mpv.Interpreter.MpvServer (withMpvClient, withMpvServer)
+import Mpv.Interpreter.MpvServer (interpretMpvClient, withMpvServer)
 
 test_server :: UnitTest
 test_server =
-  (runTestAuto . asyncToIOFinal . interpretRace . interpretLogStdoutConc . interpretTimeGhc . interpretMpvNative) do
+  (runTestAuto . asyncToIOFinal . interpretRace . interpretLogStdoutConc . interpretTimeGhc) do
     vid <- Test.fixturePath [relfile|vid.mkv|]
     duration <- Race.timeout () (Seconds 4) do
-      withMpvServer do
-        assertEq (LoadResponse 1) =<< withMpvClient do
-          resumeHoistError show do
-            r <- Mpv.command (Command.Load vid)
-            r <$ Mpv.command Command.Stop
-        withMpvClient do
-          resumeHoistError show do
-            Mpv.command (Command.Load vid)
-            duration <- Mpv.prop Property.Duration
-            duration <$ Mpv.command Command.Stop
+      (withMpvServer . interpretMpvClient . resumeHoistError show) do
+        assertEq (LoadResponse 1) =<< Mpv.command (Command.Load vid)
+        assertEq (LoadResponse 2) =<< Mpv.command (Command.Load vid)
+        Mpv.command Command.Stop
+        assertEq (LoadResponse 1) =<< Mpv.command (Command.Load vid)
+        duration <- Mpv.prop Property.Duration
+        duration <$ Mpv.command Command.Stop
     assertRight 3.6 duration

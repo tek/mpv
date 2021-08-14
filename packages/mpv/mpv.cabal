@@ -35,6 +35,7 @@ library
       Mpv.Data.MpvResources
       Mpv.Data.Node
       Mpv.Data.PlaybackState
+      Mpv.Data.PlayerError
       Mpv.Data.Property
       Mpv.Data.PropertyKey
       Mpv.Data.Request
@@ -59,10 +60,12 @@ library
       Mpv.Effect.Ipc
       Mpv.Effect.Mpv
       Mpv.Effect.MpvServer
+      Mpv.Effect.VideoPlayer
       Mpv.Interpreter.Commands
       Mpv.Interpreter.Ipc
       Mpv.Interpreter.Mpv
       Mpv.Interpreter.MpvServer
+      Mpv.Interpreter.VideoPlayer
       Mpv.Mpv
       Mpv.MpvError
       Mpv.MpvResources
@@ -176,6 +179,7 @@ test-suite mpv-unit
       Mpv.Test.MessageSplitTest
       Mpv.Test.MpvTest
       Mpv.Test.ServerTest
+      Mpv.Test.VideoPlayerTest
       Paths_mpv
   hs-source-dirs:
       test

@@ -122,10 +122,10 @@ interpretIpcClient =
       (found, res) <- waitEventAndRun name interval (runTSimple ma)
       pure ((found,) <$> res)
 
-withMpvClient ::
+interpretMpvClient ::
   Members [MpvServer Command !! MpvError, EventConsumer token MpvEvent, Log, Resource, Async, Race] r =>
   InterpreterFor (Mpv Command !! MpvError) r
-withMpvClient =
+interpretMpvClient =
   interpretCommandsJson .
   interpretIpcClient .
   interpretMpvIpc .

@@ -4,14 +4,42 @@ module Mpv (
 
   -- * Effects
   module Mpv.Effect.Mpv,
+  module Mpv.Effect.VideoPlayer,
 
   -- * Interpreters
   withMpvServer,
-  withMpvClient,
+  interpretMpvClient,
+  interpretVideoPlayer,
 ) where
 
 import Mpv.Effect.Mpv (Mpv, command, commandSync, prop, setOption, setProp)
-import Mpv.Interpreter.MpvServer (withMpvClient, withMpvServer)
+import Mpv.Effect.VideoPlayer (
+  VideoPlayer,
+  addAudioDelay,
+  addSubDelay,
+  adjustVolumeBy,
+  audioDelay,
+  audios,
+  current,
+  duration,
+  info,
+  load,
+  pause,
+  seek,
+  setAudio,
+  setAudioDelay,
+  setSubDelay,
+  setSubFps,
+  setSubtitle,
+  setVolume,
+  stop,
+  subDelay,
+  subFps,
+  subtitles,
+  volume,
+  )
+import Mpv.Interpreter.MpvServer (interpretMpvClient, withMpvServer)
+import Mpv.Interpreter.VideoPlayer (interpretVideoPlayer)
 
 -- $intro
 -- This is an implementation of an [mpv](https://mpv.io) client using its

@@ -6,11 +6,11 @@ import qualified Mpv.Data.PlaybackState as PlaybackState
 import Mpv.Data.PlaybackState (PlaybackState)
 import qualified Mpv.Data.Property as Property
 import Mpv.Data.Property (Property)
+import Mpv.Data.SubDelay (SubDelay)
 import Mpv.Data.Volume (Volume)
 import qualified Mpv.Effect.Mpv as Mpv
 import Mpv.Effect.Mpv (Mpv)
 import Mpv.Track (tracks)
-import Mpv.Data.SubDelay (SubDelay)
 
 setDefaultOptions ::
   Member (Mpv command) r =>
