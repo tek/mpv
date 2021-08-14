@@ -12,7 +12,7 @@ module Mpv (
   interpretVideoPlayer,
 ) where
 
-import Mpv.Effect.Mpv (Mpv, command, commandSync, prop, setOption, setProp)
+import Mpv.Effect.Mpv (Mpv)
 import Mpv.Effect.VideoPlayer (
   VideoPlayer,
   addAudioDelay,
@@ -37,6 +37,7 @@ import Mpv.Effect.VideoPlayer (
   subFps,
   subtitles,
   volume,
+  setOption,
   )
 import Mpv.Interpreter.MpvServer (interpretMpvClient, withMpvServer)
 import Mpv.Interpreter.VideoPlayer (interpretVideoPlayer)
