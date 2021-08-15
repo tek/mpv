@@ -14,8 +14,13 @@ module Mpv (
 
   -- * Misc
   PlayerError(PlayerError),
+  MpvEvent(MpvEvent),
+  MpvEventConsumer,
+  Event,
+  EventName,
 ) where
 
+import Mpv.Data.MpvEvent (MpvEvent(MpvEvent), MpvEventConsumer)
 import Mpv.Data.PlayerError (PlayerError (PlayerError))
 import Mpv.Effect.Mpv (Mpv)
 import Mpv.Effect.VideoPlayer (
@@ -48,6 +53,8 @@ import Mpv.Effect.VideoPlayer (
   )
 import Mpv.Interpreter.MpvServer (interpretMpvClient, withMpvServer)
 import Mpv.Interpreter.VideoPlayer (interpretVideoPlayer, interpretVideoPlayerServer)
+import Mpv.Data.Event (Event)
+import Mpv.Data.EventName (EventName)
 
 -- $intro
 -- This is an implementation of an [mpv](https://mpv.io) client using its
