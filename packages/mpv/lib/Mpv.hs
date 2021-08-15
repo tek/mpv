@@ -37,6 +37,8 @@ import Mpv.Effect.VideoPlayer (
   subFps,
   subtitles,
   volume,
+  progress,
+  expired,
   setOption,
   )
 import Mpv.Interpreter.MpvServer (interpretMpvClient, withMpvServer)
