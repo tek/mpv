@@ -109,8 +109,7 @@ interpretVideoPlayer =
   interpretAtomic Nothing . interpretMpvClient . interpretVideoPlayerMpvAtomic . raiseUnder2
 
 interpretVideoPlayerServer ::
-  Members [MpvServer Command !! MpvError, EventConsumer token MpvEvent, Log, Resource, Async, Race, Time t d] r =>
-  Members [Embed IO, Final IO] r =>
+  Members [Log, Resource, Async, Race, Time t d, Embed IO, Final IO] r =>
   InterpreterFor (VideoPlayer meta !! PlayerError) r
 interpretVideoPlayerServer =
   withMpvServer . interpretVideoPlayer . raiseUnder2
