@@ -37,4 +37,4 @@ propertyName = \case
   PercentPos -> "percent-pos"
   TimePos -> "time-pos"
   Paused -> "pause"
-  Volume -> "ao-volume"
+  Volume -> "volume"
