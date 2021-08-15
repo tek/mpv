@@ -10,8 +10,13 @@ module Mpv (
   withMpvServer,
   interpretMpvClient,
   interpretVideoPlayer,
+  interpretVideoPlayerServer,
+
+  -- * Misc
+  PlayerError(PlayerError),
 ) where
 
+import Mpv.Data.PlayerError (PlayerError (PlayerError))
 import Mpv.Effect.Mpv (Mpv)
 import Mpv.Effect.VideoPlayer (
   VideoPlayer,
@@ -22,12 +27,15 @@ import Mpv.Effect.VideoPlayer (
   audios,
   current,
   duration,
+  expired,
   info,
   load,
   pause,
+  progress,
   seek,
   setAudio,
   setAudioDelay,
+  setOption,
   setSubDelay,
   setSubFps,
   setSubtitle,
@@ -37,12 +45,9 @@ import Mpv.Effect.VideoPlayer (
   subFps,
   subtitles,
   volume,
-  progress,
-  expired,
-  setOption,
   )
 import Mpv.Interpreter.MpvServer (interpretMpvClient, withMpvServer)
-import Mpv.Interpreter.VideoPlayer (interpretVideoPlayer)
+import Mpv.Interpreter.VideoPlayer (interpretVideoPlayer, interpretVideoPlayerServer)
 
 -- $intro
 -- This is an implementation of an [mpv](https://mpv.io) client using its

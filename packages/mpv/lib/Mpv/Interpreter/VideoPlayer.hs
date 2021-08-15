@@ -18,9 +18,10 @@ import Mpv.Effect.Mpv (Mpv)
 import Mpv.Effect.MpvServer (MpvServer)
 import qualified Mpv.Effect.VideoPlayer as VideoPlayer
 import Mpv.Effect.VideoPlayer (VideoPlayer)
-import Mpv.Interpreter.MpvServer (interpretMpvClient)
+import Mpv.Interpreter.MpvServer (interpretMpvClient, withMpvServer)
 import Mpv.Mpv (addAudioDelay, addSubDelay, adjustVolumeBy, info, togglePlaybackState)
 import Mpv.Track (audioTracks, subtitles)
+import Polysemy.Time (Time)
 
 mpvError :: MpvError -> PlayerError
 mpvError = \case
@@ -106,3 +107,10 @@ interpretVideoPlayer ::
   InterpreterFor (VideoPlayer meta !! PlayerError) r
 interpretVideoPlayer =
   interpretAtomic Nothing . interpretMpvClient . interpretVideoPlayerMpvAtomic . raiseUnder2
+
+interpretVideoPlayerServer ::
+  Members [MpvServer Command !! MpvError, EventConsumer token MpvEvent, Log, Resource, Async, Race, Time t d] r =>
+  Members [Embed IO, Final IO] r =>
+  InterpreterFor (VideoPlayer meta !! PlayerError) r
+interpretVideoPlayerServer =
+  withMpvServer . interpretVideoPlayer . raiseUnder2
