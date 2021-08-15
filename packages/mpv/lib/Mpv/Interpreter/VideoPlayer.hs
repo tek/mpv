@@ -1,6 +1,6 @@
 module Mpv.Interpreter.VideoPlayer where
 
-import Polysemy.Conc (EventConsumer, interpretAtomic)
+import Polysemy.Conc (EventConsumer, interpretAtomic, ChanConsumer)
 import Polysemy.Log (Log)
 
 import Mpv.Data.AudioId (AudioId (AudioId))
@@ -110,6 +110,6 @@ interpretVideoPlayer =
 
 interpretVideoPlayerServer ::
   Members [Log, Resource, Async, Race, Time t d, Embed IO, Final IO] r =>
-  InterpreterFor (VideoPlayer meta !! PlayerError) r
+  InterpretersFor [VideoPlayer meta !! PlayerError, ChanConsumer MpvEvent] r
 interpretVideoPlayerServer =
-  withMpvServer . interpretVideoPlayer . raiseUnder2
+  withMpvServer . interpretVideoPlayer . raiseUnder
