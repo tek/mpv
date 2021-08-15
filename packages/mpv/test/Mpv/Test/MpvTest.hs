@@ -3,11 +3,9 @@ module Mpv.Test.MpvTest where
 import qualified Data.List.NonEmpty as NonEmpty
 import Path (File, Rel, relfile)
 import qualified Polysemy.Conc as Race
-import Polysemy.Conc (interpretRace)
-import Polysemy.Log.Colog (interpretLogStdoutConc)
 import qualified Polysemy.Test as Test
-import Polysemy.Test (UnitTest, assertClose, assertEq, runTestAuto)
-import Polysemy.Time (Seconds (Seconds), interpretTimeGhc)
+import Polysemy.Test (UnitTest, assertClose, assertEq)
+import Polysemy.Time (Seconds (Seconds))
 
 import qualified Mpv.Data.Command as Command
 import qualified Mpv.Data.Property as Property
@@ -18,6 +16,7 @@ import qualified Mpv.Effect.Mpv as Mpv
 import Mpv.Interpreter.Mpv (interpretMpvNative, withMpv)
 import qualified Mpv.Mpv as Mpv
 import Mpv.Mpv (addAudioDelay, adjustVolumeBy, setDefaultOptions, togglePlaybackState)
+import Mpv.Test.Run (runTest)
 
 trackList :: NonEmpty Track
 trackList =
@@ -31,7 +30,7 @@ trackList =
 
 test_mpv :: UnitTest
 test_mpv =
-  (runTestAuto . asyncToIOFinal . interpretRace . interpretLogStdoutConc . interpretTimeGhc . interpretMpvNative) do
+  (runTest . interpretMpvNative) do
     vid <- Test.fixturePath [relfile|vid.mkv|]
     Race.timeout_ () (Seconds 4) do
       withMpv do

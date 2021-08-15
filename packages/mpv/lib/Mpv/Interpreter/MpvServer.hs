@@ -18,6 +18,7 @@ import qualified Mpv.Data.EventPayload as EventPayload
 import qualified Mpv.Data.EventPayload as EndReason
 import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvEvent (MpvEvent (MpvEvent))
+import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
 import qualified Mpv.Effect.Ipc as Ipc
 import Mpv.Effect.Ipc (Ipc)
 import Mpv.Effect.Mpv (Mpv)
@@ -99,7 +100,7 @@ interpretMpvServer =
       Queue.write Terminate
 
 withMpvServer ::
-  Members [Time t d, Log, Resource, Race, Async, Embed IO, Final IO] r =>
+  Members [Reader MpvProcessConfig, Time t d, Log, Resource, Race, Async, Embed IO, Final IO] r =>
   InterpretersFor [MpvServer Command !! MpvError, ChanConsumer MpvEvent] r
 withMpvServer =
   interpretQueueTBM 64 .

@@ -1,14 +1,14 @@
-{-# language TransformListComp #-}
-
 module Mpv.Process where
 
 import Path (Abs, File, Path, Rel, parent, relfile, toFilePath, (</>))
-import Path.IO (createTempDir, getTempDir, removeDirRecur)
+import qualified Path.IO as Path
+import Path.IO (createTempDir, executable, getPermissions, getTempDir, removeDirRecur)
 import Polysemy.Resource (bracket)
 import System.Process.Typed (Process, ProcessConfig, proc, startProcess, stopProcess)
 
 import qualified Mpv.Data.MpvError as MpvError
-import Mpv.Data.MpvError (MpvError)
+import Mpv.Data.MpvError (MpvError (MpvError))
+import Mpv.Data.MpvProcessConfig (MpvProcessConfig (MpvProcessConfig))
 
 tempSocket ::
   Member (Embed IO) r =>
@@ -27,20 +27,49 @@ withTempSocketPath =
 
 mpvProc ::
   Path Abs File ->
+  Path Abs File ->
   ProcessConfig () () ()
-mpvProc socket =
-  proc "mpv" [
+mpvProc mpv socket =
+  proc (toFilePath mpv) [
     [exon|--input-ipc-server=#{toFilePath socket}|],
     "--idle=once",
     "--no-terminal"
   ]
 
+findExecutable ::
+  Members [Error MpvError, Embed IO] r =>
+  Maybe (Path Abs File) ->
+  Sem r (Path Abs File)
+findExecutable = \case
+  Just path -> do
+    tryAny (getPermissions path) >>= \case
+      Right (executable -> True) ->
+        pure path
+      Right _ ->
+        throw notExecutable
+      Left _ ->
+        throw notExist
+    where
+      notExist =
+        MpvError [exon|specified mpv path is not a readable file: #{show path}|]
+      notExecutable =
+        MpvError [exon|specified mpv path is not executable: #{show path}|]
+  Nothing ->
+    tryAny (Path.findExecutable [relfile|mpv|]) >>= \case
+      Right (Just path) ->
+        pure path
+      _ ->
+        throw (MpvError "could not find mpv executable in $PATH.")
+
 startMpvProcess ::
-  Members [Embed IO, Final IO] r =>
+  Members [Reader MpvProcessConfig, Embed IO, Final IO] r =>
   Path Abs File ->
   Sem r (Either MpvError (Process () () ()))
 startMpvProcess socket =
-  mapLeft MpvError.Fatal <$> tryAny (startProcess (mpvProc socket))
+  runError do
+    MpvProcessConfig path <- ask
+    validatedPath <- findExecutable path
+    fromExceptionVia @SomeException (MpvError.Fatal . show) (startProcess (mpvProc validatedPath socket))
 
 kill ::
   Members [Embed IO, Final IO] r =>
@@ -50,18 +79,9 @@ kill =
   traverse_ (tryAny_ . stopProcess)
 
 withMpvProcess ::
-  Members [Resource, Embed IO, Final IO] r =>
+  Members [Reader MpvProcessConfig, Resource, Embed IO, Final IO] r =>
   Path Abs File ->
   (Either MpvError (Process () () ()) -> Sem r a) ->
   Sem r a
 withMpvProcess socket =
   bracket (startMpvProcess socket) kill
-
-withMpvProcessAndSocket ::
-  Members [Resource, Embed IO, Final IO] r =>
-  (Either MpvError (Path Abs File) -> Sem r a) ->
-  Sem r a
-withMpvProcessAndSocket run = do
-  withTempSocketPath \ socket ->
-    withMpvProcess socket \ prc ->
-      run (socket <$ prc)

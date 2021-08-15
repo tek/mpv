@@ -2,21 +2,20 @@ module Mpv.Test.ServerTest where
 
 import Path (File, Rel, relfile)
 import qualified Polysemy.Conc as Race
-import Polysemy.Conc (interpretRace)
-import Polysemy.Log.Colog (interpretLogStdoutConc)
 import qualified Polysemy.Test as Test
-import Polysemy.Test (UnitTest, assertEq, assertRight, runTestAuto)
-import Polysemy.Time (Seconds (Seconds), interpretTimeGhc)
+import Polysemy.Test (UnitTest, assertEq, assertRight)
+import Polysemy.Time (Seconds (Seconds))
 
 import qualified Mpv.Data.Command as Command
 import Mpv.Data.Command (LoadResponse (LoadResponse))
 import qualified Mpv.Data.Property as Property
 import qualified Mpv.Effect.Mpv as Mpv
 import Mpv.Interpreter.MpvServer (interpretMpvClient, withMpvServer)
+import Mpv.Test.Run (runTest)
 
 test_server :: UnitTest
 test_server =
-  (runTestAuto . asyncToIOFinal . interpretRace . interpretLogStdoutConc . interpretTimeGhc) do
+  runTest do
     vid <- Test.fixturePath [relfile|vid.mkv|]
     duration <- Race.timeout () (Seconds 4) do
       (withMpvServer . interpretMpvClient . resumeHoistError show) do

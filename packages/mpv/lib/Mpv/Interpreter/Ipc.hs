@@ -19,6 +19,7 @@ import Mpv.Data.Event (Event)
 import Mpv.Data.EventName (EventName, eventNameText)
 import Mpv.Data.MpvError (MpvError (MpvError))
 import Mpv.Data.MpvEvent (MpvEvent (MpvEvent))
+import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
 import qualified Mpv.Data.MpvResources as MpvResources
 import Mpv.Data.MpvResources (MpvResources (MpvResources), OutMessage (OutMessage), Requests (Requests))
 import Mpv.Data.RequestId (RequestId)
@@ -120,7 +121,7 @@ interpretIpcResources = \case
     interpretResumableH \ _ -> stop err
 
 interpretIpcNative ::
-  Members [Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
+  Members [Reader MpvProcessConfig, Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
   InterpretersFor [
     Scoped (Either MpvError (MpvResources Value)) (Ipc Value Command !! MpvError),
     ChanConsumer MpvEvent

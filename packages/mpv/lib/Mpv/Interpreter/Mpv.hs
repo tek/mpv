@@ -10,6 +10,7 @@ import Mpv.Class.CommandEvent (CommandEvent (commandEvent))
 import Mpv.Data.Command (Command)
 import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvEvent (MpvEvent)
+import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
 import Mpv.Data.MpvResources (MpvResources)
 import qualified Mpv.Effect.Commands as Commands
 import Mpv.Effect.Commands (Commands)
@@ -64,7 +65,7 @@ interpretMpvResources = \case
     interpretResumableH \ _ -> stop err
 
 interpretMpvNative ::
-  Members [Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
+  Members [Reader MpvProcessConfig, Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
   InterpretersFor [Scoped (Either MpvError (MpvResources Value)) (Mpv Command !! MpvError), ChanConsumer MpvEvent] r
 interpretMpvNative =
   interpretEventsChan .

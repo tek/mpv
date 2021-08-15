@@ -32,6 +32,7 @@ library
       Mpv.Data.MpvError
       Mpv.Data.MpvEvent
       Mpv.Data.MpvInfo
+      Mpv.Data.MpvProcessConfig
       Mpv.Data.MpvResources
       Mpv.Data.Node
       Mpv.Data.PlaybackState
@@ -177,6 +178,7 @@ test-suite mpv-unit
   other-modules:
       Mpv.Test.MessageSplitTest
       Mpv.Test.MpvTest
+      Mpv.Test.Run
       Mpv.Test.ServerTest
       Mpv.Test.VideoPlayerTest
       Paths_mpv
@@ -246,6 +248,7 @@ test-suite mpv-unit
     , path
     , polysemy >=1.5
     , polysemy-conc
+    , polysemy-log
     , polysemy-log-co
     , polysemy-plugin >=0.3
     , polysemy-test

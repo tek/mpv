@@ -10,6 +10,7 @@ import Polysemy.Time (Time)
 
 import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvEvent (MpvEvent)
+import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
 import Mpv.Data.MpvResources (InMessage, MpvResources (MpvResources), OutMessage, Requests (Requests))
 import Mpv.Process (withMpvProcess, withTempSocketPath)
 import Mpv.Response (responseListener)
@@ -17,7 +18,7 @@ import Mpv.Socket (withSocket)
 import Mpv.SocketQueues (withSocketQueues)
 
 withMpvSocket ::
-  Members [Resource, Time t d, Race, Embed IO, Final IO] r =>
+  Members [Reader MpvProcessConfig, Resource, Time t d, Race, Embed IO, Final IO] r =>
   (Either MpvError Socket -> Sem r a) ->
   Sem r a
 withMpvSocket action =
@@ -54,7 +55,8 @@ withSTMResources action = do
   withTBMQueue 64 \ outQ -> withTBMQueue 64 \ inQ -> action outQ inQ reqs
 
 withMpvResources ::
-  Members [Events token MpvEvent, Resource, Race, Async, Log, Time t d, Embed IO, Final IO] r =>
+  Members [Reader MpvProcessConfig, Events token MpvEvent] r =>
+  Members [Resource, Race, Async, Log, Time t d, Embed IO, Final IO] r =>
   (Either MpvError (MpvResources Value) -> Sem r a) ->
   Sem r a
 withMpvResources run =

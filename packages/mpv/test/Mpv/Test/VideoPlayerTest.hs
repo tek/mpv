@@ -2,19 +2,18 @@ module Mpv.Test.VideoPlayerTest where
 
 import Path (File, Rel, relfile)
 import qualified Polysemy.Conc as Race
-import Polysemy.Conc (interpretRace)
-import Polysemy.Log.Colog (interpretLogStdoutConc)
 import qualified Polysemy.Test as Test
-import Polysemy.Test (UnitTest, assertRight, runTestAuto, assertEq)
-import Polysemy.Time (Seconds (Seconds), interpretTimeGhc)
+import Polysemy.Test (UnitTest, assertEq, assertRight)
+import Polysemy.Time (Seconds (Seconds))
 
 import qualified Mpv.Effect.VideoPlayer as VideoPlayer
 import Mpv.Interpreter.MpvServer (withMpvServer)
 import Mpv.Interpreter.VideoPlayer (interpretVideoPlayer)
+import Mpv.Test.Run (runTest)
 
 test_videoPlayer :: UnitTest
 test_videoPlayer =
-  (runTestAuto . asyncToIOFinal . interpretRace . interpretLogStdoutConc . interpretTimeGhc) do
+  runTest do
     vid <- Test.fixturePath [relfile|vid.mkv|]
     duration <- Race.timeout () (Seconds 4) do
       withMpvServer do

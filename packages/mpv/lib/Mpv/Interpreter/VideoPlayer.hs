@@ -1,7 +1,8 @@
 module Mpv.Interpreter.VideoPlayer where
 
-import Polysemy.Conc (EventConsumer, interpretAtomic, ChanConsumer)
+import Polysemy.Conc (ChanConsumer, EventConsumer, interpretAtomic)
 import Polysemy.Log (Log)
+import Polysemy.Time (Time)
 
 import Mpv.Data.AudioId (AudioId (AudioId))
 import qualified Mpv.Data.Command as Command
@@ -9,6 +10,7 @@ import Mpv.Data.Command (Command)
 import qualified Mpv.Data.MpvError as MpvError
 import Mpv.Data.MpvError (MpvError (MpvError))
 import Mpv.Data.MpvEvent (MpvEvent)
+import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
 import qualified Mpv.Data.PlayerError as PlayerError
 import Mpv.Data.PlayerError (PlayerError (PlayerError))
 import qualified Mpv.Data.Property as Property
@@ -21,7 +23,6 @@ import Mpv.Effect.VideoPlayer (VideoPlayer)
 import Mpv.Interpreter.MpvServer (interpretMpvClient, withMpvServer)
 import Mpv.Mpv (addAudioDelay, addSubDelay, adjustVolumeBy, info, togglePlaybackState)
 import Mpv.Track (audioTracks, subtitles)
-import Polysemy.Time (Time)
 
 mpvError :: MpvError -> PlayerError
 mpvError = \case
@@ -109,7 +110,7 @@ interpretVideoPlayer =
   interpretAtomic Nothing . interpretMpvClient . interpretVideoPlayerMpvAtomic . raiseUnder2
 
 interpretVideoPlayerServer ::
-  Members [Log, Resource, Async, Race, Time t d, Embed IO, Final IO] r =>
+  Members [Reader MpvProcessConfig, Log, Resource, Async, Race, Time t d, Embed IO, Final IO] r =>
   InterpretersFor [VideoPlayer meta !! PlayerError, ChanConsumer MpvEvent] r
 interpretVideoPlayerServer =
   withMpvServer . interpretVideoPlayer . raiseUnder
