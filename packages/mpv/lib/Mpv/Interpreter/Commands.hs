@@ -84,7 +84,7 @@ mpvCommand requestId async' = \case
   Command.Stop ->
     encodeCommand requestId "quit" Nil async'
   Command.Seek pos (SeekFlags reference unit' restart) ->
-    encodeCommand requestId "seek" (I (pos * 100) :* I spec :* Nil) async'
+    encodeCommand requestId "seek" (I pos :* I spec :* Nil) async'
     where
       spec =
         [exon|#{seekStyleArg unit' reference}+#{seekRestartArg restart}|]
