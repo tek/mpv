@@ -93,6 +93,10 @@ interpretVideoPlayerMpvAtomic =
       hoistError (adjustVolumeBy delta)
     VideoPlayer.Duration ->
       hoistError (Mpv.prop Property.Duration)
+    VideoPlayer.Progress ->
+      hoistError (Mpv.prop Property.PercentPos)
+    VideoPlayer.Expired ->
+      hoistError (Mpv.prop Property.TimePos)
     VideoPlayer.SetOption key value ->
       hoistError (Mpv.setOption key value)
 

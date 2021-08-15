@@ -7,6 +7,7 @@ import Mpv.Data.AudioDelay (AudioDelay)
 import Mpv.Data.AudioId (AudioId)
 import Mpv.Data.AudioTracks (AudioTracks)
 import Mpv.Data.MpvInfo (MpvInfo)
+import Mpv.Data.PlaybackState (PlaybackState)
 import Mpv.Data.SeekFlags (
   SeekFlags (SeekFlags),
   SeekReference (Absolute, Relative),
@@ -20,7 +21,7 @@ import Mpv.Data.Subtitles (Subtitles)
 import Mpv.Data.VideoDuration (VideoDuration)
 import Mpv.Data.VideoProgress (VideoProgress (VideoProgress))
 import Mpv.Data.Volume (Volume)
-import Mpv.Data.PlaybackState (PlaybackState)
+import Mpv.Data.VideoExpired (VideoExpired)
 
 data VideoPlayer (meta :: Type) :: Effect where
   Current :: VideoPlayer meta m (Maybe meta)
@@ -45,6 +46,8 @@ data VideoPlayer (meta :: Type) :: Effect where
   SetAudioDelay :: AudioDelay -> VideoPlayer meta m ()
   AddAudioDelay :: AudioDelay -> VideoPlayer meta m AudioDelay
   Duration :: VideoPlayer meta m VideoDuration
+  Progress :: VideoPlayer meta m VideoProgress
+  Expired :: VideoPlayer meta m VideoExpired
   SetOption :: Text -> Text -> VideoPlayer meta m ()
 
 makeSem ''VideoPlayer
