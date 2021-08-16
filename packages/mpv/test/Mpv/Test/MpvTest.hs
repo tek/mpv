@@ -36,7 +36,7 @@ test_mpv =
       withMpv do
         resumeHoistError show do
           setDefaultOptions
-          Mpv.command (Command.Load vid)
+          Mpv.command (Command.Load vid def)
           assertEq 3.6 =<< Mpv.prop Property.Duration
           assertEq 0 =<< Mpv.prop Property.SubFps
           Mpv.setProp Property.SubFps 100

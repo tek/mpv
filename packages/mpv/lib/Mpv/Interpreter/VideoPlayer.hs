@@ -32,28 +32,28 @@ mpvError = \case
     PlayerError.Fatal err
 
 hoistError ::
-  Members [Mpv Command !! MpvError, Stop PlayerError] r =>
-  InterpreterFor (Mpv Command) r
+  Members [Mpv !! MpvError, Stop PlayerError] r =>
+  InterpreterFor Mpv r
 hoistError =
   resumeHoist mpvError
 
 hoistError_ ::
-  Members [Mpv Command !! MpvError, Stop PlayerError] r =>
-  Sem (Mpv Command : r) a ->
+  Members [Mpv !! MpvError, Stop PlayerError] r =>
+  Sem (Mpv : r) a ->
   Sem r ()
 hoistError_ =
   void . hoistError
 
 interpretVideoPlayerMpvAtomic ::
   ∀ meta r .
-  Members [Mpv Command !! MpvError, AtomicState (Maybe meta), Race] r =>
+  Members [Mpv !! MpvError, AtomicState (Maybe meta), Race] r =>
   InterpreterFor (VideoPlayer meta !! PlayerError) r
 interpretVideoPlayerMpvAtomic =
   interpretResumable \case
     VideoPlayer.Current ->
       atomicGet
     VideoPlayer.Load meta file -> do
-      void $ hoistError (Mpv.command (Command.Load file))
+      void $ hoistError (Mpv.command (Command.Load file Nothing))
       atomicPut (Just meta)
     VideoPlayer.Pause ->
       hoistError togglePlaybackState
@@ -99,8 +99,6 @@ interpretVideoPlayerMpvAtomic =
       hoistError (Mpv.prop Property.PercentPos)
     VideoPlayer.Expired ->
       hoistError (Mpv.prop Property.TimePos)
-    VideoPlayer.SetOption key value ->
-      hoistError (Mpv.setOption key value)
 
 interpretVideoPlayer ::
   ∀ meta token r .

@@ -31,7 +31,7 @@ module Mpv.Prelude (
 import Control.Exception (catch, try)
 import Control.Lens (at, makeClassy, over, (%~), (.~), (<>~), (?~), (^.))
 import qualified Data.Aeson as Aeson
-import Data.Aeson (FromJSON (parseJSON), SumEncoding (UntaggedValue), ToJSON (toJSON), Value)
+import Data.Aeson (FromJSON (parseJSON), SumEncoding (UntaggedValue), ToJSON (toJSON), Value, camelTo2)
 import Data.Aeson.TH (deriveFromJSON, deriveJSON)
 import Data.Composition ((.:), (.:.), (.::))
 import Data.Default (Default (def))
@@ -183,12 +183,16 @@ untaggedOptions =
 defaultJson :: TH.Name -> TH.Q [TH.Dec]
 defaultJson =
   deriveJSON jsonOptions
-{-# inline defaultJson #-}
+
+lowerMinusJson :: TH.Name -> TH.Q [TH.Dec]
+lowerMinusJson =
+  deriveJSON jsonOptions {
+    Aeson.constructorTagModifier = camelTo2 '-'
+  }
 
 unaryRecordJson :: TH.Name -> TH.Q [TH.Dec]
 unaryRecordJson =
   deriveJSON basicOptions
-{-# inline unaryRecordJson #-}
 
 type a ++ b =
   Append a b

@@ -24,7 +24,6 @@ import Mpv.Effect.Ipc (Ipc)
 import Mpv.Effect.Mpv (Mpv)
 import qualified Mpv.Effect.MpvServer as MpvServer
 import Mpv.Effect.MpvServer (MpvServer)
-import Mpv.Interpreter.Commands (interpretCommandsJson)
 import Mpv.Interpreter.Ipc (interpretIpcNative, waitEventAndRun, withIpc)
 import Mpv.Interpreter.Mpv (interpretMpvIpc)
 
@@ -125,9 +124,8 @@ interpretIpcClient =
 
 interpretMpvClient ::
   Members [MpvServer Command !! MpvError, EventConsumer token MpvEvent, Log, Resource, Async, Race] r =>
-  InterpreterFor (Mpv Command !! MpvError) r
+  InterpreterFor (Mpv !! MpvError) r
 interpretMpvClient =
-  interpretCommandsJson .
   interpretIpcClient .
   interpretMpvIpc .
-  raiseUnder2
+  raiseUnder

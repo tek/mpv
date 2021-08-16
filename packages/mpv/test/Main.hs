@@ -3,6 +3,7 @@ module Main where
 import Mpv.Test.MessageSplitTest (test_messageSplit)
 import Mpv.Test.MpvTest (test_mpv)
 import Mpv.Test.ServerTest (test_server)
+import Mpv.Test.VideoPlayerTest (test_videoPlayer)
 import Polysemy.Test (unitTest)
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.ExpectedFailure (wrapTest)
@@ -21,7 +22,8 @@ mpvTests =
   ignoreIfNoX $
   testGroup "mpv process" [
     unitTest "basic functionality" test_mpv,
-    unitTest "client/server architecture" test_server
+    unitTest "client/server architecture" test_server,
+    unitTest "video player effect" test_videoPlayer
   ]
 
 tests :: TestTree

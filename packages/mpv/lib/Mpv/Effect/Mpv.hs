@@ -4,19 +4,23 @@ module Mpv.Effect.Mpv where
 
 import Polysemy.Time (Seconds (Seconds), TimeUnit)
 
+import Mpv.Data.Command (Command, CycleDirection)
 import Mpv.Data.Property (Property)
 
-data Mpv (command :: Type -> Type) :: Effect where
-  CommandSync :: TimeUnit u => u -> command a -> Mpv command m a
-  Prop :: Property v -> Mpv command m v
-  SetProp :: Show v => Property v -> v -> Mpv command m ()
-  SetOption :: Text -> Text ->  Mpv command m ()
+data Mpv :: Effect where
+  CommandSync :: TimeUnit u => u -> Command a -> Mpv m a
+  Prop :: Property v -> Mpv m v
+  SetProp :: Show v => Property v -> v -> Mpv m ()
+  AddProp :: Show v => Property v -> Maybe v -> Mpv m ()
+  MultiplyProp :: Show v => Property v -> v -> Mpv m ()
+  CycleProp :: Show v => Property v -> Maybe CycleDirection -> Mpv m ()
+  SetOption :: Text -> Text ->  Mpv m ()
 
 makeSem ''Mpv
 
 command ::
-  Member (Mpv command) r =>
-  command a ->
+  Member Mpv r =>
+  Command a ->
   Sem r a
 command =
   commandSync (Seconds 1)

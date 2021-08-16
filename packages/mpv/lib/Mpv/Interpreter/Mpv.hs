@@ -7,13 +7,12 @@ import Polysemy.Log (Log)
 import Polysemy.Time (Time, TimeUnit)
 
 import Mpv.Class.CommandEvent (CommandEvent (commandEvent))
+import qualified Mpv.Data.Command as Command
 import Mpv.Data.Command (Command)
 import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvEvent (MpvEvent)
 import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
 import Mpv.Data.MpvResources (MpvResources)
-import qualified Mpv.Effect.Commands as Commands
-import Mpv.Effect.Commands (Commands)
 import qualified Mpv.Effect.Ipc as Ipc
 import Mpv.Effect.Ipc (Ipc)
 import qualified Mpv.Effect.Mpv as Mpv
@@ -25,10 +24,9 @@ import Mpv.MpvResources (withMpvResources)
 
 waitEventCmd ::
   TimeUnit u =>
-  CommandEvent command =>
-  Member (Ipc fmt command) r =>
+  Member (Ipc fmt Command) r =>
   u ->
-  command b ->
+  Command b ->
   Sem r a ->
   Sem r a
 waitEventCmd wait (commandEvent -> Just event) ma =
@@ -37,27 +35,29 @@ waitEventCmd _ _ ma =
   ma
 
 interpretMpvIpc ::
-  CommandEvent command =>
-  Members [Ipc fmt command !! MpvError, Commands fmt command] r =>
-  InterpreterFor (Mpv command !! MpvError) r
+  Member (Ipc fmt Command !! MpvError) r =>
+  InterpreterFor (Mpv !! MpvError) r
 interpretMpvIpc =
   interpretResumable \case
     Mpv.CommandSync wait cmd ->
       restop (waitEventCmd wait cmd (Ipc.sync cmd))
-    Mpv.Prop prop -> do
-      cmd <- Commands.prop prop
-      resumeHoist (propError prop) (Ipc.sync cmd)
-    Mpv.SetProp prop value -> do
-      cmd <- Commands.setProp prop value
-      resumeHoist (setPropError prop) (Ipc.sync cmd)
-    Mpv.SetOption key value -> do
-      cmd <- Commands.setOption key value
-      resumeHoist (optionError key value) (Ipc.sync cmd)
+    Mpv.Prop prop ->
+      resumeHoist (propError prop) (Ipc.sync (Command.Prop prop))
+    Mpv.SetProp prop value ->
+      resumeHoist (setPropError prop) (Ipc.sync (Command.SetProp prop value))
+    Mpv.AddProp prop value ->
+      resumeHoist (setPropError prop) (Ipc.sync (Command.AddProp prop value))
+    Mpv.CycleProp prop direction ->
+      resumeHoist (setPropError prop) (Ipc.sync (Command.CycleProp prop direction))
+    Mpv.MultiplyProp prop value ->
+      resumeHoist (setPropError prop) (Ipc.sync (Command.MultiplyProp prop value))
+    Mpv.SetOption key value ->
+      resumeHoist (optionError key value) (Ipc.sync (Command.SetOption key value))
 
 interpretMpvResources ::
   Members [EventConsumer token MpvEvent, Resource, Async, Race, Log, Embed IO, Final IO] r =>
   Either MpvError (MpvResources Value) ->
-  InterpreterFor (Mpv Command !! MpvError) r
+  InterpreterFor (Mpv !! MpvError) r
 interpretMpvResources = \case
   Right res ->
     interpretCommandsJson . interpretIpc res . interpretMpvIpc . raiseUnder2
@@ -66,15 +66,15 @@ interpretMpvResources = \case
 
 interpretMpvNative ::
   Members [Reader MpvProcessConfig, Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
-  InterpretersFor [Scoped (Either MpvError (MpvResources Value)) (Mpv Command !! MpvError), ChanConsumer MpvEvent] r
+  InterpretersFor [Scoped (Either MpvError (MpvResources Value)) (Mpv !! MpvError), ChanConsumer MpvEvent] r
 interpretMpvNative =
   interpretEventsChan .
   runScoped withMpvResources interpretMpvResources .
   raiseUnder
 
 withMpv ::
-  Member (Scoped resource (Mpv command !! MpvError)) r =>
-  InterpreterFor (Mpv command !! MpvError) r
+  Member (Scoped resource (Mpv !! MpvError)) r =>
+  InterpreterFor (Mpv !! MpvError) r
 withMpv =
   scoped
 

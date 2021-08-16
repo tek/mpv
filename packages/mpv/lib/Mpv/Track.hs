@@ -59,26 +59,26 @@ splitTracks ts =
   (trackType toVideo VideoTracks ts, trackType toAudio AudioTracks ts, trackType toSubtitle Subtitles ts)
 
 tracks ::
-  Member (Mpv commmand) r =>
+  Member Mpv r =>
   Sem r (VideoTracks, AudioTracks, Subtitles)
 tracks = do
   TrackList allTracks <- Mpv.prop Property.TrackList
   pure (splitTracks (toList allTracks))
 
 videoTracks ::
-  Member (Mpv commmand) r =>
+  Member Mpv r =>
   Sem r VideoTracks
 videoTracks =
   view _1 <$> tracks
 
 audioTracks ::
-  Member (Mpv commmand) r =>
+  Member Mpv r =>
   Sem r AudioTracks
 audioTracks =
   view _2 <$> tracks
 
 subtitles ::
-  Member (Mpv commmand) r =>
+  Member Mpv r =>
   Sem r Subtitles
 subtitles =
   view _3 <$> tracks

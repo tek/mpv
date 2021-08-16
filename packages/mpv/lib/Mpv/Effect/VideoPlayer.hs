@@ -48,7 +48,6 @@ data VideoPlayer (meta :: Type) :: Effect where
   Duration :: VideoPlayer meta m VideoDuration
   Progress :: VideoPlayer meta m VideoProgress
   Expired :: VideoPlayer meta m VideoExpired
-  SetOption :: Text -> Text -> VideoPlayer meta m ()
 
 makeSem ''VideoPlayer
 
