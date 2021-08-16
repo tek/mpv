@@ -40,7 +40,6 @@ import Mpv.Effect.VideoPlayer (
   seek,
   setAudio,
   setAudioDelay,
-  setOption,
   setSubDelay,
   setSubFps,
   setSubtitle,
