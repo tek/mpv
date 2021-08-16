@@ -36,7 +36,6 @@ library
       Mpv.Data.MpvResources
       Mpv.Data.Node
       Mpv.Data.PlaybackState
-      Mpv.Data.PlayerError
       Mpv.Data.Property
       Mpv.Data.PropertyKey
       Mpv.Data.Request
