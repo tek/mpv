@@ -5,9 +5,11 @@ import Path (File, Rel, relfile)
 import qualified Polysemy.Conc as Race
 import qualified Polysemy.Test as Test
 import Polysemy.Test (UnitTest, assertClose, assertEq)
+import qualified Polysemy.Time as Time
 import Polysemy.Time (Seconds (Seconds))
 
 import qualified Mpv.Data.Command as Command
+import qualified Mpv.Data.OsdLevel as OsdLevel
 import qualified Mpv.Data.Property as Property
 import qualified Mpv.Data.SeekFlags as SeekFlags
 import Mpv.Data.SeekFlags (SeekFlags (SeekFlags), SeekReference (Absolute), SeekRestart (Exact))
@@ -39,6 +41,9 @@ test_mpv =
           Mpv.command (Command.Load vid def)
           assertEq 3.6 =<< Mpv.prop Property.Duration
           assertEq 0 =<< Mpv.prop Property.SubFps
+          assertEq "message vid.mkv" =<< Mpv.command (Command.Manual Nothing "expand-text" ["message ${filename}"])
+          Mpv.command (Command.ShowText "message" (Seconds 2) OsdLevel.SubtitlesOnly)
+          Time.sleep (Seconds 2)
           Mpv.setProp Property.SubFps 100
           Mpv.setProp Property.SubDelay 1
           assertEq 100 =<< Mpv.prop Property.SubFps

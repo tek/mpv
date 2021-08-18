@@ -1,13 +1,13 @@
 module Mpv.Interpreter.Commands where
 
-import Data.SOP (All, I (I), NP (Nil, (:*)))
+import Data.SOP (All, I (I), K (K), NP (Nil, (:*)), hcmap, hcollapse, unI)
 import Polysemy.Time (TimeUnit, convert)
-import Polysemy.Time.Data.TimeUnit (unNanoSeconds)
+import Polysemy.Time.Data.TimeUnit (unMilliSeconds, unNanoSeconds)
 import Prelude hiding (All)
 
 import Mpv.Data.AudioDelay (unAudioDelay)
 import qualified Mpv.Data.Command as Command
-import Mpv.Data.Command (Command, CommandArgs (CommandArgs))
+import Mpv.Data.Command (Command)
 import qualified Mpv.Data.PlaybackState as PlaybackState
 import qualified Mpv.Data.Property as Property
 import Mpv.Data.Property (Property, propertyName)
@@ -51,14 +51,26 @@ secondsFrac u =
   fromIntegral (unNanoSeconds (convert u)) / 1e9
 
 encodeCommand ::
+  Text ->
+  [Value] ->
+  RequestId ->
+  Bool ->
+  Value
+encodeCommand cmd args requestId async' =
+  toJSON (Request requestId (toJSON cmd : args) async')
+
+encodeCommandGen ::
   All ToJSON as =>
   Text ->
   NP I as ->
   RequestId ->
   Bool ->
   Value
-encodeCommand cmd args requestId async' =
-  toJSON (Request requestId (CommandArgs (I cmd :* args)) async')
+encodeCommandGen cmd args =
+  encodeCommand cmd argValues
+  where
+    argValues =
+      hcollapse (hcmap (Proxy @ToJSON) (K .  toJSON .  unI) args)
 
 encodeProp :: Property v -> v -> Value
 encodeProp = \case
@@ -86,34 +98,38 @@ encodeProp = \case
 mpvCommand :: Command a -> RequestId -> Bool -> Value
 mpvCommand = \case
   Command.Load path (Just opts) ->
-    encodeCommand "loadfile" (I path :* I opts :* Nil)
+    encodeCommandGen "loadfile" (I path :* I opts :* Nil)
   Command.Load path Nothing ->
-    encodeCommand "loadfile" (I path :* Nil)
+    encodeCommandGen "loadfile" (I path :* Nil)
   Command.Stop ->
-    encodeCommand "quit" Nil
+    encodeCommandGen "quit" Nil
   Command.Seek pos (SeekFlags reference unit' restart) ->
-    encodeCommand "seek" (I (seekValue pos unit') :* I spec :* Nil)
+    encodeCommandGen "seek" (I (seekValue pos unit') :* I spec :* Nil)
     where
       spec =
         [exon|#{seekStyleArg unit' reference}+#{seekRestartArg restart}|]
   Command.Manual _ name args ->
     encodeCommand name args
   Command.Prop prop ->
-    encodeCommand "get_property" (I (propertyName prop) :* Nil)
+    encodeCommandGen "get_property" (I (propertyName prop) :* Nil)
   Command.SetProp prop value ->
-    encodeCommand "set_property" (I (propertyName prop) :* I (encodeProp prop value) :* Nil)
+    encodeCommandGen "set_property" (I (propertyName prop) :* I (encodeProp prop value) :* Nil)
   Command.AddProp prop (Just value) ->
-    encodeCommand "add_property" (I (propertyName prop) :* I (encodeProp prop value) :* Nil)
+    encodeCommandGen "add_property" (I (propertyName prop) :* I (encodeProp prop value) :* Nil)
   Command.AddProp prop Nothing ->
-    encodeCommand "add_property" (I (propertyName prop) :* Nil)
+    encodeCommandGen "add_property" (I (propertyName prop) :* Nil)
   Command.CycleProp prop (Just direction) ->
-    encodeCommand "cycle_property" (I (propertyName prop) :* I direction :* Nil)
+    encodeCommandGen "cycle_property" (I (propertyName prop) :* I direction :* Nil)
   Command.CycleProp prop Nothing ->
-    encodeCommand "cycle_property" (I (propertyName prop) :* Nil)
+    encodeCommandGen "cycle_property" (I (propertyName prop) :* Nil)
   Command.MultiplyProp prop value ->
-    encodeCommand "multiply_property" (I (propertyName prop) :* I (encodeProp prop value) :* Nil)
+    encodeCommandGen "multiply_property" (I (propertyName prop) :* I (encodeProp prop value) :* Nil)
   Command.SetOption key value ->
-    encodeCommand "set" (I key :* I value :* Nil)
+    encodeCommandGen "set" (I key :* I value :* Nil)
+  Command.ShowText txt duration level ->
+    encodeCommandGen "show_text" (I txt :* I (unMilliSeconds (convert duration)) :* I level :* Nil)
+  Command.ShowProgress ->
+    encodeCommand "show_progress" []
 
 decodeProp ::
   Property v ->
@@ -165,6 +181,10 @@ decodeResult = \case
   Command.MultiplyProp _ _ ->
     const unit
   Command.SetOption _ _ ->
+    const unit
+  Command.ShowText _ _ _ ->
+    const unit
+  Command.ShowProgress ->
     const unit
 
 decodeError :: Text -> ResponseError

@@ -19,7 +19,6 @@ build-type:     Simple
 library
   exposed-modules:
       Mpv
-      Mpv.Class.CommandEvent
       Mpv.Data.AudioDelay
       Mpv.Data.AudioId
       Mpv.Data.AudioTrack
@@ -35,6 +34,7 @@ library
       Mpv.Data.MpvProcessConfig
       Mpv.Data.MpvResources
       Mpv.Data.Node
+      Mpv.Data.OsdLevel
       Mpv.Data.PlaybackState
       Mpv.Data.Property
       Mpv.Data.PropertyKey

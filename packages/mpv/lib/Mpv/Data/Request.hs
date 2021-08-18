@@ -1,19 +1,15 @@
 module Mpv.Data.Request where
 
-import Data.SOP (All, Compose, I)
 import Prelude hiding (All, Compose)
 
-import Mpv.Data.Command (CommandArgs)
 import Mpv.Data.RequestId (RequestId)
 
-data Request as =
+data Request =
   Request {
     request_id :: RequestId,
-    command :: CommandArgs as,
+    command :: [Value],
     async :: Bool
   }
-  deriving (Generic)
+  deriving (Eq, Show, Generic)
 
-deriving instance All (Compose Eq I) as => Eq (Request as)
-deriving instance All (Compose Show I) as => Show (Request as)
-deriving instance All ToJSON as => ToJSON (Request as)
+defaultJson ''Request

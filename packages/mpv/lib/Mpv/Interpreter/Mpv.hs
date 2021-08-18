@@ -6,9 +6,9 @@ import Polysemy.Conc.Effect.Scoped (Scoped, runScoped, scoped)
 import Polysemy.Log (Log)
 import Polysemy.Time (Time, TimeUnit)
 
-import Mpv.Class.CommandEvent (CommandEvent (commandEvent))
 import qualified Mpv.Data.Command as Command
 import Mpv.Data.Command (Command)
+import Mpv.Data.EventName (EventName (FileLoaded, EndFile))
 import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvEvent (MpvEvent)
 import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
@@ -21,6 +21,13 @@ import Mpv.Interpreter.Commands (interpretCommandsJson)
 import Mpv.Interpreter.Ipc (interpretIpc)
 import Mpv.MpvError (optionError, propError, setPropError)
 import Mpv.MpvResources (withMpvResources)
+
+commandEvent :: Command a -> Maybe EventName
+commandEvent = \case
+  Command.Manual event _ _ -> event
+  Command.Load _ _ -> Just FileLoaded
+  Command.Stop -> Just EndFile
+  _ -> Nothing
 
 waitEventCmd ::
   TimeUnit u =>

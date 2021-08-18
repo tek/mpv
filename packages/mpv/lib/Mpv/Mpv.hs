@@ -18,6 +18,7 @@ setDefaultOptions ::
 setDefaultOptions = do
   Mpv.setOption "input-default-bindings" "yes"
   Mpv.setOption "input-vo-keyboard" "yes"
+  Mpv.setOption "osd-level" "1"
 
 alterPropM ::
   Show v =>
