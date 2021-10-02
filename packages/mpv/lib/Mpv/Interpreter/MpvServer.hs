@@ -5,9 +5,9 @@ import Data.Some (withSome)
 import Polysemy (runTSimple)
 import qualified Polysemy.Conc as Conc
 import Polysemy.Conc (ChanConsumer, EventConsumer, Queue, interpretQueueTBM, withAsync_)
-import qualified Polysemy.Conc.Data.Queue as Queue
 import qualified Polysemy.Conc.Data.QueueResult as QueueResult
 import Polysemy.Conc.Effect.Scoped (Scoped)
+import qualified Polysemy.Conc.Queue as Queue
 import qualified Polysemy.Log as Log
 import Polysemy.Log (Log)
 import Polysemy.Time (Time)

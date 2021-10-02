@@ -3,7 +3,7 @@ module Mpv.Test.ServerTest where
 import Path (Abs, File, Path, Rel, relfile)
 import qualified Polysemy.Conc as Race
 import qualified Polysemy.Test as Test
-import Polysemy.Test (Hedgehog, UnitTest, assertEq, assertRight)
+import Polysemy.Test (Hedgehog, UnitTest, assertEq, assertJust)
 import Polysemy.Time (Seconds (Seconds))
 
 import qualified Mpv.Data.Command as Command
@@ -31,6 +31,6 @@ test_server :: UnitTest
 test_server =
   runTest do
     vid <- Test.fixturePath [relfile|vid.mkv|]
-    duration <- Race.timeout () (Seconds 4) do
+    duration <- Race.timeoutMaybe (Seconds 4) do
       withMpvServer $ interpretMpvClient $ resumeHoistError show $ main vid
-    assertRight 3.6 duration
+    assertJust 3.6 duration

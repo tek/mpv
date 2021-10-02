@@ -7,9 +7,10 @@ import Polysemy.AtomicState (atomicState')
 import qualified Polysemy.Conc as Race
 import qualified Polysemy.Conc as Events
 import Polysemy.Conc (ChanConsumer, EventConsumer, Queue, interpretEventsChan, withAsync)
-import qualified Polysemy.Conc.Data.Queue as Queue
-import Polysemy.Conc.Effect.Scoped (Scoped, runScoped, scoped)
+import Polysemy.Conc.Effect.Scoped (Scoped, scoped)
 import Polysemy.Conc.Interpreter.Queue.TBM (interpretQueueTBMWith)
+import Polysemy.Conc.Interpreter.Scoped (runScoped)
+import qualified Polysemy.Conc.Queue as Queue
 import qualified Polysemy.Log as Log
 import Polysemy.Log (Log)
 import Polysemy.Time (Seconds (Seconds), Time, TimeUnit)
@@ -56,7 +57,7 @@ syncRequest ::
   Sem r a
 syncRequest cmd = do
   result <- sendRequest cmd
-  response <- Race.timeout_ (Left "mpv request timed out") (Seconds 3) (takeMVar result)
+  response <- Race.timeout_ (pure (Left "mpv request timed out")) (Seconds 3) (takeMVar result)
   fmt <- stopEitherWith (MpvError . coerce) response
   stopEitherWith (MpvError . coerce) =<< Commands.decode cmd fmt
 
@@ -81,7 +82,7 @@ waitEventAndRun ::
 waitEventAndRun name interval ma =
   withAsync (waitEvent name) \ handle -> do
     res <- ma
-    found <- Race.timeout_ Nothing interval do
+    found <- Race.timeout_ (pure Nothing) interval do
       await handle
     when (isNothing found) do
       Log.warn [exon|waiting for mpv event #{eventNameText name} failed|]

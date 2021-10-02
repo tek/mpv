@@ -2,13 +2,14 @@ module Mpv.Interpreter.Mpv where
 
 import Polysemy.Conc (ChanConsumer, EventConsumer, interpretEventsChan)
 import Polysemy.Conc.Effect.Events (Consume, EventToken)
-import Polysemy.Conc.Effect.Scoped (Scoped, runScoped, scoped)
+import Polysemy.Conc.Effect.Scoped (Scoped, scoped)
+import Polysemy.Conc.Interpreter.Scoped (runScoped)
 import Polysemy.Log (Log)
 import Polysemy.Time (Time, TimeUnit)
 
 import qualified Mpv.Data.Command as Command
 import Mpv.Data.Command (Command)
-import Mpv.Data.EventName (EventName (FileLoaded, EndFile))
+import Mpv.Data.EventName (EventName (EndFile, FileLoaded))
 import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvEvent (MpvEvent)
 import Mpv.Data.MpvProcessConfig (MpvProcessConfig)

@@ -5,9 +5,9 @@ import qualified Data.ByteString as ByteString
 import Network.Socket (Socket)
 import qualified Network.Socket.ByteString as Socket
 import Polysemy.Conc (Queue, withAsync_)
-import qualified Polysemy.Conc.Data.Queue as Queue
 import qualified Polysemy.Conc.Data.QueueResult as QueueResult
 import Polysemy.Conc.Interpreter.Queue.TBM (interpretQueueTBMWith)
+import qualified Polysemy.Conc.Queue as Queue
 import qualified Polysemy.Log as Log
 import Polysemy.Log (Log)
 

@@ -34,7 +34,7 @@ test_mpv :: UnitTest
 test_mpv =
   (runTest . interpretMpvNative) do
     vid <- Test.fixturePath [relfile|vid.mkv|]
-    Race.timeout_ () (Seconds 4) do
+    Race.timeoutU (Seconds 4) do
       withMpv do
         resumeHoistError show do
           setDefaultOptions

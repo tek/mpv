@@ -3,7 +3,7 @@ module Mpv.Test.VideoPlayerTest where
 import Path (File, Rel, relfile)
 import qualified Polysemy.Conc as Race
 import qualified Polysemy.Test as Test
-import Polysemy.Test (UnitTest, assertEq, assertRight)
+import Polysemy.Test (UnitTest, assertEq, assertJust)
 import Polysemy.Time (Seconds (Seconds))
 
 import qualified Mpv.Effect.VideoPlayer as VideoPlayer
@@ -15,7 +15,7 @@ test_videoPlayer :: UnitTest
 test_videoPlayer =
   runTest do
     vid <- Test.fixturePath [relfile|vid.mkv|]
-    duration <- Race.timeout () (Seconds 4) do
+    duration <- Race.timeoutMaybe (Seconds 4) do
       withMpvServer do
         interpretVideoPlayer do
           resumeHoistError show do
@@ -25,4 +25,4 @@ test_videoPlayer =
             VideoPlayer.seekAbs 0.5
             assertEq 0.5 =<< VideoPlayer.progress
             d <$ VideoPlayer.stop
-    assertRight 3.6 duration
+    assertJust 3.6 duration
