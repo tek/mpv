@@ -23,10 +23,10 @@ import Mpv.Test.Run (runTest)
 trackList :: NonEmpty Track
 trackList =
   [
-    Track (Just 1) False Nothing Audio,
-    Track (Just 1) True Nothing Sub,
+    Track (Just 1) False (Just "fre") Audio,
     Track (Just 1) True Nothing Video,
-    Track (Just 2) False Nothing Sub,
+    Track (Just 1) True (Just "eng") Sub,
+    Track (Just 2) False (Just "ger") Sub,
     Track (Just 2) True Nothing Audio
   ]
 

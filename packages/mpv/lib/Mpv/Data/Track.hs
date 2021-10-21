@@ -32,7 +32,7 @@ data Track =
   Track {
     id :: Maybe Int,
     selected :: Bool,
-    language :: Maybe Text,
+    lang :: Maybe Text,
     _type :: TrackType
   }
   deriving (Eq, Show, Generic, Ord)
