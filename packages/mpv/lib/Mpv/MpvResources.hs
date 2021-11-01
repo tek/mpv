@@ -24,10 +24,10 @@ withMpvSocket ::
 withMpvSocket action =
   withTempSocketPath \ socketPath ->
     withMpvProcess socketPath \case
-        Right _ ->
-          withSocket socketPath action
-        Left err ->
-          action (Left err)
+      Right _ ->
+        withSocket socketPath action
+      Left err ->
+        action (Left err)
 
 withIpcIO ::
   Members [Events t MpvEvent, Resource, Race, Async, Log, Embed IO, Final IO] r =>

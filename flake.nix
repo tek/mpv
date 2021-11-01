@@ -5,10 +5,11 @@
 
   outputs = { hix, ... }:
   let
-    overrides = { hackage, source, jailbreak, ... }:
+    overrides = { hackage, source, jailbreak, unbreak, ... }:
     {
       co-log-polysemy = jailbreak (hackage "0.0.1.2" "17bcs8dvrhwfcyklknkqg11gxgxm2jaa7kbm6xx4vm1976abzwss");
-      exon = hackage "0.1.0.0" "0lwq53zcw6v030yk0v7p6s5cv1gqag2jb56lh3p7xc5qdn06bc6b";
+      exon = hackage "0.2.0.1" "0hs0xrh1v64l1n4zqx3rqfjdh6czxm7av85kj1awya9zxcfcy5cl";
+      flatparse = unbreak;
       polysemy = hackage "1.6.0.0" "15k51ysrfcbkww1562g8zvrlzymlk2rxhcsz9ipsb0q6h571qgvf";
       polysemy-conc = hackage "0.4.0.1" "16i03j2s0lg306j2if62nhlsdvyyp40sz2khzsblz1a3flx5i7sf";
       polysemy-log = hackage "0.2.2.4" "1fgn7ywifbp02lz2wyaixvp43vnrff8n5nkczxmq1r5bzqbs6f45";
