@@ -2,8 +2,9 @@
   description = "Mpv Client";
 
   inputs.hix.url = github:tek/hix;
+  inputs.polysemy-conc.url = github:tek/polysemy-conc;
 
-  outputs = { hix, ... }:
+  outputs = { hix, polysemy-conc, ... }:
   let
     overrides = { hackage, source, jailbreak, unbreak, ... }:
     {
@@ -11,7 +12,7 @@
       exon = hackage "0.2.0.1" "0hs0xrh1v64l1n4zqx3rqfjdh6czxm7av85kj1awya9zxcfcy5cl";
       flatparse = unbreak;
       polysemy = hackage "1.6.0.0" "15k51ysrfcbkww1562g8zvrlzymlk2rxhcsz9ipsb0q6h571qgvf";
-      polysemy-conc = hackage "0.4.0.1" "16i03j2s0lg306j2if62nhlsdvyyp40sz2khzsblz1a3flx5i7sf";
+      polysemy-conc = source.package polysemy-conc "conc";
       polysemy-log = hackage "0.2.2.4" "1fgn7ywifbp02lz2wyaixvp43vnrff8n5nkczxmq1r5bzqbs6f45";
       polysemy-log-co = hackage "0.2.2.4" "006pw9zddacckr4f6l6dmr03glbj70zsmfydird1jz18xh37gvyf";
       polysemy-plugin = hackage "0.4.0.0" "0pah1a8h8ckbv2fq20hrikrd1p5a3bdxr03npkyixc6mv5k1rmck";
@@ -27,7 +28,6 @@
       mpv = ./packages/mpv;
     };
     ghci.extraArgs = ["-fplugin=Polysemy.Plugin"];
-    ghcid.easy-hls = false;
     compat = false;
   };
 }

@@ -1,7 +1,7 @@
 module Mpv.Interpreter.Mpv where
 
 import Polysemy.Conc (ChanConsumer, EventConsumer, interpretEventsChan)
-import Polysemy.Conc.Effect.Events (Consume, EventToken)
+import Polysemy.Conc.Effect.Events (Consume)
 import Polysemy.Conc.Effect.Scoped (Scoped, scoped)
 import Polysemy.Conc.Interpreter.Scoped (runScoped)
 import Polysemy.Log (Log)
@@ -87,7 +87,7 @@ withMpv =
   scoped
 
 events ::
-  Member (Scoped (EventToken token) (Consume MpvEvent)) r =>
+  Member (EventConsumer token MpvEvent) r =>
   InterpreterFor (Consume MpvEvent) r
 events =
   scoped
