@@ -6,7 +6,7 @@ cabal-version: 2.0
 
 name:           mpv
 version:        0.1.0.0
-synopsis:       Mpv Client
+synopsis:       Mpv Client for Polysemy
 description:    Please see the README on GitLab at <https://gitlab.tryp.io/haskell/bodhi>
 category:       Video
 author:         Torsten Schmits
@@ -155,7 +155,7 @@ library
     , path-io
     , polysemy >=1.5
     , polysemy-conc
-    , polysemy-log
+    , polysemy-log >=0.3.0.2
     , polysemy-plugin >=0.3
     , polysemy-resume
     , polysemy-time
@@ -248,7 +248,6 @@ test-suite mpv-unit
     , polysemy >=1.5
     , polysemy-conc
     , polysemy-log
-    , polysemy-log-co
     , polysemy-plugin >=0.3
     , polysemy-test
     , polysemy-time

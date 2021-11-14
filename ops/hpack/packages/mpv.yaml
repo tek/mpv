@@ -1,5 +1,5 @@
 name: mpv
-synopsis: Mpv Client
+synopsis: Mpv Client for Polysemy
 <<: !include shared/meta.yaml
 <<: !include shared/extensions.yaml
 
@@ -26,7 +26,7 @@ library:
     - path-io
     - polysemy >= 1.5
     - polysemy-conc
-    - polysemy-log
+    - polysemy-log >= 0.3.0.2
     - polysemy-plugin >= 0.3
     - polysemy-resume
     - polysemy-time
@@ -55,7 +55,6 @@ tests:
       - polysemy >= 1.5
       - polysemy-conc
       - polysemy-log
-      - polysemy-log-co
       - polysemy-plugin >= 0.3
       - polysemy-test
       - polysemy-time

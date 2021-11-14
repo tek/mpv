@@ -15,6 +15,7 @@ import qualified Mpv.Data.SeekFlags as SeekFlags
 import Mpv.Data.SeekFlags (SeekFlags (SeekFlags), SeekReference (Absolute), SeekRestart (Exact))
 import Mpv.Data.Track (Track (Track), TrackList (TrackList), TrackType (Audio, Sub, Video))
 import qualified Mpv.Effect.Mpv as Mpv
+import Mpv.Effect.Mpv (Mpv)
 import Mpv.Interpreter.Mpv (interpretMpvNative, withMpv)
 import qualified Mpv.Mpv as Mpv
 import Mpv.Mpv (addAudioDelay, adjustVolumeBy, setDefaultOptions, togglePlaybackState)
@@ -36,7 +37,7 @@ test_mpv =
     vid <- Test.fixturePath [relfile|vid.mkv|]
     Race.timeoutU (Seconds 4) do
       withMpv do
-        resumeHoistError show do
+        resumeHoistError @_ @Mpv show do
           setDefaultOptions
           Mpv.command (Command.Load vid def)
           assertEq 3.6 =<< Mpv.prop Property.Duration

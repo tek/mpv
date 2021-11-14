@@ -7,6 +7,7 @@ import Polysemy.Test (UnitTest, assertEq, assertJust)
 import Polysemy.Time (Seconds (Seconds))
 
 import qualified Mpv.Effect.VideoPlayer as VideoPlayer
+import Mpv.Effect.VideoPlayer (VideoPlayer)
 import Mpv.Interpreter.MpvServer (withMpvServer)
 import Mpv.Interpreter.VideoPlayer (interpretVideoPlayer)
 import Mpv.Test.Run (runTest)
@@ -18,7 +19,7 @@ test_videoPlayer =
     duration <- Race.timeoutMaybe (Seconds 4) do
       withMpvServer do
         interpretVideoPlayer do
-          resumeHoistError show do
+          resumeHoistError @_ @(VideoPlayer _) show do
             _ <- VideoPlayer.load () vid
             d <- VideoPlayer.duration
             VideoPlayer.pause
