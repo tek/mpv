@@ -1,6 +1,6 @@
 module Mpv.Data.EventName where
 
-import Data.Aeson (withText)
+import Data.Aeson (FromJSON (parseJSON), ToJSON (toJSON), withText)
 
 data EventName =
   FileLoaded
@@ -12,7 +12,7 @@ data EventName =
   Unknown
   |
   Other Text
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
 
 eventNameText :: EventName -> Text
 eventNameText = \case

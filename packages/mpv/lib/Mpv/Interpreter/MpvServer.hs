@@ -2,15 +2,13 @@
 module Mpv.Interpreter.MpvServer where
 
 import Data.Some (withSome)
-import Polysemy (runTSimple)
+import Exon (exon)
 import qualified Polysemy.Conc as Conc
-import Polysemy.Conc (ChanConsumer, EventConsumer, Queue, interpretQueueTBM, withAsync_)
+import Polysemy.Conc (ChanConsumer, interpretQueueTBM, withAsync_)
 import qualified Polysemy.Conc.Data.QueueResult as QueueResult
-import Polysemy.Conc.Effect.Scoped (Scoped)
 import qualified Polysemy.Conc.Queue as Queue
+import Polysemy.Internal.Tactics (liftT)
 import qualified Polysemy.Log as Log
-import Polysemy.Log (Log)
-import Polysemy.Time (Time)
 
 import Mpv.Data.Command (Command)
 import qualified Mpv.Data.Event as Event

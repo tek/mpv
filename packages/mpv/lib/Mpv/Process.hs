@@ -1,9 +1,9 @@
 module Mpv.Process where
 
-import Path (Abs, File, Path, Rel, parent, relfile, toFilePath, (</>))
+import Exon (exon)
+import Path (Abs, File, Path, parent, relfile, toFilePath, (</>))
 import qualified Path.IO as Path
 import Path.IO (createTempDir, executable, getPermissions, getTempDir, removeDirRecur)
-import Polysemy.Resource (bracket)
 import System.Process.Typed (Process, ProcessConfig, proc, startProcess, stopProcess)
 
 import qualified Mpv.Data.MpvError as MpvError
@@ -23,7 +23,7 @@ withTempSocketPath ::
   (Path Abs File -> Sem r a) ->
   Sem r a
 withTempSocketPath =
-  bracket tempSocket (tryAny_ . removeDirRecur . parent)
+  bracket tempSocket (tryAny . removeDirRecur . parent)
 
 mpvProc ::
   Path Abs File ->
@@ -76,7 +76,7 @@ kill ::
   Either MpvError (Process () () ()) ->
   Sem r ()
 kill =
-  traverse_ (tryAny_ . stopProcess)
+  traverse_ (tryAny . stopProcess)
 
 withMpvProcess ::
   Members [Reader MpvProcessConfig, Resource, Embed IO, Final IO] r =>

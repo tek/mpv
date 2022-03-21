@@ -1,11 +1,9 @@
 module Mpv.Interpreter.Mpv where
 
-import Polysemy.Conc (ChanConsumer, EventConsumer, interpretEventsChan)
+import Data.Aeson (Value)
+import Polysemy.Conc (ChanConsumer, interpretEventsChan)
 import Polysemy.Conc.Effect.Events (Consume)
-import Polysemy.Conc.Effect.Scoped (Scoped, scoped)
 import Polysemy.Conc.Interpreter.Scoped (runScoped)
-import Polysemy.Log (Log)
-import Polysemy.Time (Time, TimeUnit)
 
 import qualified Mpv.Data.Command as Command
 import Mpv.Data.Command (Command)

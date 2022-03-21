@@ -1,5 +1,8 @@
 module Mpv.Data.MpvInfo where
 
+import Control.Lens (makeClassy)
+import Polysemy.Time.Json (json)
+
 import Mpv.Data.AudioDelay (AudioDelay)
 import Mpv.Data.AudioTracks (AudioTracks)
 import Mpv.Data.PlaybackState (PlaybackState)
@@ -20,7 +23,7 @@ data MpvInfo =
     _audio :: AudioTracks,
     _audioDelay :: AudioDelay
   }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
 
-defaultJson ''MpvInfo
+json ''MpvInfo
 makeClassy ''MpvInfo

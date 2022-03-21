@@ -1,7 +1,5 @@
 module Mpv.Seek where
 
-import Prelude hiding (All)
-
 import Mpv.Data.SeekFlags (SeekReference (Absolute, Relative), SeekRestart (Exact, Keyframes), SeekUnit (Percent, Time))
 
 seekStyleArg ::

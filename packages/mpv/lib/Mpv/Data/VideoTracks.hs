@@ -1,5 +1,7 @@
 module Mpv.Data.VideoTracks where
 
+import Polysemy.Time.Json (json)
+
 import Mpv.Data.VideoId (VideoId)
 import Mpv.Data.VideoTrack (VideoTrack)
 
@@ -8,6 +10,6 @@ data VideoTracks =
     active :: Maybe VideoId,
     videos :: [VideoTrack]
   }
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
-defaultJson ''VideoTracks
+json ''VideoTracks

@@ -1,7 +1,7 @@
 module Mpv.Test.MpvTest where
 
 import qualified Data.List.NonEmpty as NonEmpty
-import Path (File, Rel, relfile)
+import Path (relfile)
 import qualified Polysemy.Conc as Race
 import qualified Polysemy.Test as Test
 import Polysemy.Test (UnitTest, assertClose, assertEq)

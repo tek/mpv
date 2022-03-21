@@ -1,19 +1,18 @@
 module Mpv.Interpreter.Ipc where
 
+import Data.Aeson (Value)
 import qualified Data.Map.Strict as Map
 import Data.Some (Some)
-import Polysemy (runTSimple)
-import Polysemy.AtomicState (atomicState')
+import Exon (exon)
 import qualified Polysemy.Conc as Race
 import qualified Polysemy.Conc as Events
-import Polysemy.Conc (ChanConsumer, EventConsumer, Queue, interpretEventsChan, withAsync)
-import Polysemy.Conc.Effect.Scoped (Scoped, scoped)
+import Polysemy.Conc (ChanConsumer, interpretEventsChan, withAsync)
 import Polysemy.Conc.Interpreter.Queue.TBM (interpretQueueTBMWith)
 import Polysemy.Conc.Interpreter.Scoped (runScoped)
 import qualified Polysemy.Conc.Queue as Queue
+import Polysemy.Internal.Tactics (liftT)
 import qualified Polysemy.Log as Log
-import Polysemy.Log (Log)
-import Polysemy.Time (Seconds (Seconds), Time, TimeUnit)
+import Polysemy.Time (Seconds (Seconds))
 
 import Mpv.Data.Command (Command)
 import Mpv.Data.Event (Event)
@@ -57,7 +56,7 @@ syncRequest ::
   Sem r a
 syncRequest cmd = do
   result <- sendRequest cmd
-  response <- Race.timeout_ (pure (Left "mpv request timed out")) (Seconds 3) (takeMVar result)
+  response <- Race.timeout_ (pure (Left "mpv request timed out")) (Seconds 3) (embed (takeMVar result))
   fmt <- stopEitherWith (MpvError . coerce) response
   stopEitherWith (MpvError . coerce) =<< Commands.decode cmd fmt
 

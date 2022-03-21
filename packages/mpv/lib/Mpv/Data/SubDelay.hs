@@ -1,10 +1,11 @@
 module Mpv.Data.SubDelay where
 
+import Polysemy.Time.Json (json)
 import Polysemy.Time (NanoSeconds)
 
 newtype SubDelay =
   SubDelay { unSubDelay :: NanoSeconds }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
   deriving newtype (Num, Ord, Enum, Real, Fractional)
 
-defaultJson ''SubDelay
+json ''SubDelay

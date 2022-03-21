@@ -1,5 +1,7 @@
 module Mpv.MpvError where
 
+import Exon (exon)
+
 import qualified Mpv.Data.MpvError as MpvError
 import Mpv.Data.MpvError (MpvError (MpvError))
 import Mpv.Data.Property (Property, propertyName)

@@ -1,10 +1,8 @@
 module Mpv.Data.MpvEvent where
 
-import Data.Aeson ((.:))
-import Data.Aeson.Types (withObject)
+import Data.Aeson (FromJSON (parseJSON), ToJSON, withObject, (.:))
 import Data.Some (Some (Some))
 import Polysemy.Conc (ChanConsumer)
-import Prelude hiding ((.:))
 
 import qualified Mpv.Data.Event as Event
 import Mpv.Data.Event (Event)
@@ -16,7 +14,7 @@ data MpvEvent =
     name :: EventName,
     payload :: Some Event
   }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
 
 instance FromJSON MpvEvent where
   parseJSON value =

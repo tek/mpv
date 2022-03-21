@@ -1,6 +1,7 @@
 module Mpv.Data.Request where
 
-import Prelude hiding (All, Compose)
+import Data.Aeson (Value)
+import Polysemy.Time.Json (json)
 
 import Mpv.Data.RequestId (RequestId)
 
@@ -10,6 +11,6 @@ data Request =
     command :: [Value],
     async :: Bool
   }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
 
-defaultJson ''Request
+json ''Request

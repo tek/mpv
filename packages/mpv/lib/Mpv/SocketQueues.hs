@@ -1,15 +1,17 @@
 module Mpv.SocketQueues where
 
 import Control.Concurrent.STM.TBMQueue (TBMQueue)
+import qualified Data.Aeson as Aeson
+import Data.Aeson (Value)
 import qualified Data.ByteString as ByteString
+import Exon (exon)
 import Network.Socket (Socket)
 import qualified Network.Socket.ByteString as Socket
-import Polysemy.Conc (Queue, withAsync_)
+import Polysemy.Conc (withAsync_)
 import qualified Polysemy.Conc.Data.QueueResult as QueueResult
 import Polysemy.Conc.Interpreter.Queue.TBM (interpretQueueTBMWith)
 import qualified Polysemy.Conc.Queue as Queue
 import qualified Polysemy.Log as Log
-import Polysemy.Log (Log)
 
 import Mpv.Data.MpvResources (
   InMessage (InMessage, InMessageError),
@@ -24,9 +26,9 @@ messageLines =
 
 parseInMessage :: ByteString -> InMessage Value
 parseInMessage =
-  jsonDecode >>> \case
+  Aeson.eitherDecodeStrict' >>> \case
     Right v -> InMessage v
-    Left err -> InMessageError err
+    Left err -> InMessageError (toText err)
 
 publishAsInMessage ::
   Member (Queue (InMessage Value)) r =>
@@ -78,7 +80,7 @@ writeQueue ::
 writeQueue socket =
   Queue.read >>= \case
     QueueResult.Success (OutMessage msg) ->
-      tryAny (Socket.sendAll socket (jsonEncode msg <> "\n")) >>= \case
+      tryAny (Socket.sendAll socket (toStrict (Aeson.encode msg) <> "\n")) >>= \case
         Right () ->
           writeQueue socket
         Left err ->

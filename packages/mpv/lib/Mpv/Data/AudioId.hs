@@ -1,8 +1,10 @@
 module Mpv.Data.AudioId where
 
+import Polysemy.Time.Json (json)
+
 newtype AudioId =
   AudioId { unAudioId :: Int }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
   deriving newtype (Num, Real, Enum, Integral, Ord)
 
-defaultJson ''AudioId
+json ''AudioId

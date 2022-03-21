@@ -1,17 +1,19 @@
 module Mpv.Data.Response where
 
+import Polysemy.Time.Json (json)
+
 import Mpv.Data.RequestId (RequestId)
 
 newtype ResponseError =
   ResponseError { unResponseError :: Text }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
   deriving newtype (IsString)
 
-defaultJson ''ResponseError
+json ''ResponseError
 
 data Response fmt =
   Response {
     requestId :: RequestId,
     payload :: Either ResponseError fmt
   }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)

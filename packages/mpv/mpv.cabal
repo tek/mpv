@@ -1,18 +1,18 @@
-cabal-version: 2.0
+cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.34.6.
 --
 -- see: https://github.com/sol/hpack
 
 name:           mpv
 version:        0.1.0.0
 synopsis:       Mpv Client for Polysemy
-description:    Please see the README on GitLab at <https://gitlab.tryp.io/haskell/bodhi>
+description:    Please see the README on GitHub at <https://github.com/tek/mpv>
 category:       Video
 author:         Torsten Schmits
-maintainer:     tek@tryp.io
-copyright:      2021 Torsten Schmits
-license:        OtherLicense
+maintainer:     haskell@tryp.io
+copyright:      2022 Torsten Schmits
+license:        BSD-2-Clause-Patent
 license-file:   LICENSE
 build-type:     Simple
 
@@ -66,19 +66,16 @@ library
       Mpv.Interpreter.Mpv
       Mpv.Interpreter.MpvServer
       Mpv.Interpreter.VideoPlayer
+      Mpv.Json
       Mpv.Mpv
       Mpv.MpvError
       Mpv.MpvResources
-      Mpv.Prelude
-      Mpv.Prelude.Debug
       Mpv.Process
       Mpv.Response
       Mpv.Seek
       Mpv.Socket
       Mpv.SocketQueues
       Mpv.Track
-  other-modules:
-      Prelude
   hs-source-dirs:
       lib
   default-extensions:
@@ -95,8 +92,10 @@ library
       DeriveFoldable
       DeriveFunctor
       DeriveGeneric
+      DeriveLift
       DeriveTraversable
       DerivingStrategies
+      DerivingVia
       DisambiguateRecordFields
       DoAndIfThenElse
       DuplicateRecordFields
@@ -126,6 +125,7 @@ library
       RankNTypes
       RecordWildCards
       RecursiveDo
+      RoleAnnotations
       ScopedTypeVariables
       StandaloneDeriving
       TemplateHaskell
@@ -138,10 +138,10 @@ library
       UndecidableInstances
       UnicodeSyntax
       ViewPatterns
-  ghc-options: -Wall -Wredundant-constraints -Wunused-packages -fplugin=Polysemy.Plugin
+  ghc-options: -Wall -Wredundant-constraints -Wincomplete-uni-patterns -Wmissing-deriving-strategies -Widentities -Wunused-packages -fplugin=Polysemy.Plugin
   build-depends:
       aeson >=1.4
-    , base ==4.*
+    , base >=4.12 && <5
     , composition
     , containers
     , data-default
@@ -149,6 +149,7 @@ library
     , either
     , exon
     , extra
+    , incipit
     , lens
     , network
     , path
@@ -160,7 +161,6 @@ library
     , polysemy-resume
     , polysemy-time
     , process
-    , relude
     , some
     , sop-core
     , stm-chans
@@ -180,7 +180,6 @@ test-suite mpv-unit
       Mpv.Test.Run
       Mpv.Test.ServerTest
       Mpv.Test.VideoPlayerTest
-      Paths_mpv
   hs-source-dirs:
       test
   default-extensions:
@@ -197,8 +196,10 @@ test-suite mpv-unit
       DeriveFoldable
       DeriveFunctor
       DeriveGeneric
+      DeriveLift
       DeriveTraversable
       DerivingStrategies
+      DerivingVia
       DisambiguateRecordFields
       DoAndIfThenElse
       DuplicateRecordFields
@@ -228,6 +229,7 @@ test-suite mpv-unit
       RankNTypes
       RecordWildCards
       RecursiveDo
+      RoleAnnotations
       ScopedTypeVariables
       StandaloneDeriving
       TemplateHaskell
@@ -240,9 +242,10 @@ test-suite mpv-unit
       UndecidableInstances
       UnicodeSyntax
       ViewPatterns
-  ghc-options: -Wall -Wredundant-constraints -Wunused-packages -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wredundant-constraints -Wincomplete-uni-patterns -Wmissing-deriving-strategies -Widentities -Wunused-packages -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base ==4.*
+      base >=4.12 && <5
+    , incipit
     , mpv
     , path
     , polysemy >=1.5
@@ -255,6 +258,4 @@ test-suite mpv-unit
     , tasty-expected-failure
   mixins:
       base hiding (Prelude)
-    , mpv hiding (Mpv.Prelude)
-    , mpv (Mpv.Prelude as Prelude)
   default-language: Haskell2010

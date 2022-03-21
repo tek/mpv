@@ -1,8 +1,10 @@
 module Mpv.Data.VideoProgress where
 
+import Polysemy.Time.Json (json)
+
 newtype VideoProgress =
   VideoProgress { unVideoProgress :: Double }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
   deriving newtype (Num, Ord, Enum, Real, Fractional, RealFrac)
 
-defaultJson ''VideoProgress
+json ''VideoProgress

@@ -1,5 +1,7 @@
 module Mpv.Data.Subtitles where
 
+import Polysemy.Time.Json (json)
+
 import Mpv.Data.Subtitle (Subtitle)
 import Mpv.Data.SubtitleId (SubtitleId)
 
@@ -8,6 +10,6 @@ data Subtitles =
     active :: Maybe SubtitleId,
     subtitles :: [Subtitle]
   }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
 
-defaultJson ''Subtitles
+json ''Subtitles

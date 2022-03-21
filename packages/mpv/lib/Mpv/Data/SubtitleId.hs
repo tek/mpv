@@ -1,8 +1,10 @@
 module Mpv.Data.SubtitleId where
 
+import Polysemy.Time.Json (json)
+
 newtype SubtitleId =
   SubtitleId { unSubtitleId :: Int }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
   deriving newtype (Num, Real, Enum, Integral, Ord)
 
-defaultJson ''SubtitleId
+json ''SubtitleId

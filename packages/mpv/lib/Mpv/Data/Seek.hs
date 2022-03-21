@@ -1,5 +1,7 @@
 module Mpv.Data.Seek where
 
+import Polysemy.Time.Json (json)
+
 import Mpv.Data.SeekFlags (SeekFlags)
 
 data Seek =
@@ -7,6 +9,6 @@ data Seek =
     position :: Double,
     flags :: SeekFlags
   }
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
-defaultJson ''Seek
+json ''Seek

@@ -1,19 +1,20 @@
 module Mpv.Data.Command where
 
+import Data.Aeson (FromJSON (parseJSON), Value)
+import Data.Aeson.TH (deriveJSON)
 import Path (Abs, File, Path)
-import Prelude hiding (All, Compose, Stop)
 
 import Mpv.Data.EventName (EventName)
 import Mpv.Data.OsdLevel (OsdLevel)
 import Mpv.Data.Property (Property)
 import Mpv.Data.SeekFlags (SeekFlags)
-import Polysemy.Time (TimeUnit)
+import Mpv.Json (basicOptions, lowerMinusJson)
 
 data CycleDirection =
   Up
   |
   Down
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
 lowerMinusJson ''CycleDirection
 
@@ -21,7 +22,7 @@ data LoadResponse =
   LoadResponse {
     playlist_entry_id :: Int
   }
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
 deriveJSON basicOptions ''LoadResponse
 
@@ -31,7 +32,7 @@ data LoadOption =
   Append
   |
   AppendPlay
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
 lowerMinusJson ''LoadOption
 
@@ -41,7 +42,7 @@ instance Default LoadOption where
 
 data EmptyResponse =
   EmptyResponse
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
 instance FromJSON EmptyResponse where
   parseJSON =
@@ -61,4 +62,4 @@ data Command :: Type -> Type where
   ShowText :: (TimeUnit u, Show u) => Text -> u -> OsdLevel -> Command ()
   ShowProgress :: Command ()
 
-deriving instance Show (Command a)
+deriving stock instance Show (Command a)

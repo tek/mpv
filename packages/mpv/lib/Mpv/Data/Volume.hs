@@ -1,8 +1,10 @@
 module Mpv.Data.Volume where
 
+import Polysemy.Time.Json (json)
+
 newtype Volume =
   Volume { unVolume :: Double }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
   deriving newtype (Num, Ord, Enum, Real, Fractional)
 
-defaultJson ''Volume
+json ''Volume

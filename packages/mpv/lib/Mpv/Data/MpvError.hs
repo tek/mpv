@@ -1,9 +1,11 @@
 module Mpv.Data.MpvError where
 
+import Polysemy.Time.Json (json)
+
 data MpvError =
   MpvError { error :: Text }
   |
   Fatal { exception :: Text }
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
-defaultJson ''MpvError
+json ''MpvError

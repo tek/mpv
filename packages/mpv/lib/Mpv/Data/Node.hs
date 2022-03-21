@@ -18,4 +18,4 @@ data Node =
   Map !(Map Text Node)
   |
   ByteArray !ByteString
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)

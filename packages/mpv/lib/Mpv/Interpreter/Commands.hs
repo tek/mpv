@@ -1,9 +1,10 @@
 module Mpv.Interpreter.Commands where
 
+import Data.Aeson (ToJSON (toJSON), Value)
 import Data.SOP (All, I (I), K (K), NP (Nil, (:*)), hcmap, hcollapse, unI)
-import Polysemy.Time (TimeUnit, convert)
+import Exon (exon)
+import Polysemy.Time (convert)
 import Polysemy.Time.Data.TimeUnit (unMilliSeconds, unNanoSeconds)
-import Prelude hiding (All)
 
 import Mpv.Data.AudioDelay (unAudioDelay)
 import qualified Mpv.Data.Command as Command
@@ -22,6 +23,7 @@ import Mpv.Data.VideoExpired (unVideoExpired)
 import Mpv.Data.Volume (unVolume)
 import qualified Mpv.Effect.Commands as Commands
 import Mpv.Effect.Commands (Commands)
+import Mpv.Json (jsonDecodeValue)
 import Mpv.Seek (seekRestartArg, seekStyleArg)
 
 percentToRatio ::
@@ -197,4 +199,4 @@ interpretCommandsJson =
     Commands.Encode requestId async' cmd ->
       pure (mpvCommand cmd requestId async')
     Commands.Decode cmd value ->
-      pure (mapLeft decodeError (decodeResult cmd value))
+      pure (first decodeError (decodeResult cmd value))

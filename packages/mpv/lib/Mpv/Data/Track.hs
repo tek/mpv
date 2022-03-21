@@ -1,6 +1,8 @@
 module Mpv.Data.Track where
 
-import Data.Aeson (withText)
+import Data.Aeson (FromJSON (parseJSON), ToJSON (toJSON), withText)
+import Exon (exon)
+import Polysemy.Time.Json (json)
 
 data TrackType =
   Audio
@@ -8,7 +10,7 @@ data TrackType =
   Sub
   |
   Video
-  deriving (Eq, Show, Enum, Ord)
+  deriving stock (Eq, Show, Enum, Ord)
 
 instance FromJSON TrackType where
   parseJSON =
@@ -35,12 +37,12 @@ data Track =
     lang :: Maybe Text,
     _type :: TrackType
   }
-  deriving (Eq, Show, Generic, Ord)
+  deriving stock (Eq, Show, Generic, Ord)
 
-defaultJson ''Track
+json ''Track
 
 newtype TrackList =
   TrackList { unTrackList :: NonEmpty Track }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
 
-defaultJson ''TrackList
+json ''TrackList

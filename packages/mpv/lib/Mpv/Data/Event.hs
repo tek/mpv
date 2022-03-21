@@ -1,6 +1,6 @@
 module Mpv.Data.Event where
 
-import Data.Aeson (Value (Null))
+import Data.Aeson (ToJSON (toJSON), Value (Null))
 import Data.GADT.Compare.TH (deriveGEq)
 import Data.GADT.Show.TH (deriveGShow)
 import Data.Some (Some, withSome)

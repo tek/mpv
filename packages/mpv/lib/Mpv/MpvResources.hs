@@ -1,12 +1,11 @@
 module Mpv.MpvResources where
 
+import Control.Concurrent.STM (TVar, newTVarIO)
 import Control.Concurrent.STM.TBMQueue (TBMQueue)
+import Data.Aeson (Value)
 import Network.Socket (Socket)
-import Polysemy (insertAt)
-import Polysemy.Conc (Events, withAsync_)
+import Polysemy.Conc (withAsync_)
 import Polysemy.Conc.Interpreter.Queue.TBM (withTBMQueue)
-import Polysemy.Log (Log)
-import Polysemy.Time (Time)
 
 import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvEvent (MpvEvent)

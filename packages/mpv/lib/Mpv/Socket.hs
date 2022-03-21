@@ -4,8 +4,7 @@ import qualified Network.Socket as Socket
 import Network.Socket (SockAddr (SockAddrUnix), Socket)
 import Path (Abs, File, Path, toFilePath)
 import Polysemy.Conc (retryingWithError)
-import Polysemy.Resource (bracket)
-import Polysemy.Time (MilliSeconds (MilliSeconds), Seconds (Seconds), Time)
+import Polysemy.Time (MilliSeconds (MilliSeconds), Seconds (Seconds))
 
 import qualified Mpv.Data.MpvError as MpvError
 import Mpv.Data.MpvError (MpvError)
@@ -14,7 +13,7 @@ unixSocket ::
   Members [Error MpvError, Embed IO] r =>
   Sem r Socket
 unixSocket =
-  errorException MpvError.Fatal (Socket.socket Socket.AF_UNIX Socket.Stream 0)
+  fromExceptionVia @SomeException (MpvError.Fatal . show) (Socket.socket Socket.AF_UNIX Socket.Stream 0)
 
 connectSocket ::
   Member (Embed IO) r =>

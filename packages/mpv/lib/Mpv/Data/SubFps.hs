@@ -1,8 +1,10 @@
 module Mpv.Data.SubFps where
 
+import Polysemy.Time.Json (json)
+
 newtype SubFps =
   SubFps { unSubFps :: Double }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
   deriving newtype (Num, Ord, Enum, Real, Fractional)
 
-defaultJson ''SubFps
+json ''SubFps

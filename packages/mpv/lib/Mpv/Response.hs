@@ -2,18 +2,17 @@ module Mpv.Response where
 
 import Data.Aeson (Value (Null), fromJSON)
 import qualified Data.Map.Strict as Map
-import Polysemy.AtomicState (atomicState')
+import Exon (exon)
 import qualified Polysemy.Conc as Events
 import qualified Polysemy.Conc as Queue
-import Polysemy.Conc (Events, Queue)
 import qualified Polysemy.Log as Log
-import Polysemy.Log (Log)
 
 import Mpv.Data.Message (Message (ResponseEvent, ResponseMessage))
 import Mpv.Data.MpvEvent (MpvEvent)
 import Mpv.Data.MpvResources (InMessage (InMessage, InMessageError), Requests (Requests))
 import Mpv.Data.RequestId (RequestId (RequestId))
 import Mpv.Data.Response (Response (Response), ResponseError (ResponseError))
+import Mpv.Json (aesonToEither)
 
 decodePayload :: Text -> Maybe Value -> Either ResponseError Value
 decodePayload "success" value =

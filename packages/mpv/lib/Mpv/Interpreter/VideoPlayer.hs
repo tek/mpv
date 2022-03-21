@@ -1,8 +1,6 @@
 module Mpv.Interpreter.VideoPlayer where
 
-import Polysemy.Conc (ChanConsumer, EventConsumer, interpretAtomic)
-import Polysemy.Log (Log)
-import Polysemy.Time (Time)
+import Polysemy.Conc (ChanConsumer, interpretAtomic)
 
 import Mpv.Data.AudioId (AudioId (AudioId))
 import qualified Mpv.Data.Command as Command

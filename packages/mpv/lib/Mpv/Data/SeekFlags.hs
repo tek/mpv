@@ -1,12 +1,14 @@
 module Mpv.Data.SeekFlags where
 
+import Polysemy.Time.Json (json)
+
 data SeekReference =
   Absolute
   |
   Relative
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
-defaultJson ''SeekReference
+json ''SeekReference
 
 instance Default SeekReference where
   def =
@@ -16,9 +18,9 @@ data SeekUnit =
   Percent
   |
   Time
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
-defaultJson ''SeekUnit
+json ''SeekUnit
 
 instance Default SeekUnit where
   def =
@@ -28,9 +30,9 @@ data SeekRestart =
   Keyframes
   |
   Exact
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
-defaultJson ''SeekRestart
+json ''SeekRestart
 
 instance Default SeekRestart where
   def =
@@ -42,6 +44,7 @@ data SeekFlags =
     unit :: SeekUnit,
     restart :: SeekRestart
   }
-  deriving (Eq, Show, Generic, Default)
+  deriving stock (Eq, Show, Generic)
+  deriving anyclass (Default)
 
-defaultJson ''SeekFlags
+json ''SeekFlags

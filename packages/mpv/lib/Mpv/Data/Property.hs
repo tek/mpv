@@ -1,5 +1,7 @@
 module Mpv.Data.Property where
 
+import Data.Aeson (Value)
+
 import Mpv.Data.AudioDelay (AudioDelay)
 import Mpv.Data.PlaybackState (PlaybackState)
 import Mpv.Data.SubDelay (SubDelay)
@@ -8,7 +10,6 @@ import Mpv.Data.Track (TrackList)
 import Mpv.Data.VideoDuration (VideoDuration)
 import Mpv.Data.VideoExpired (VideoExpired)
 import Mpv.Data.VideoProgress (VideoProgress)
-
 import Mpv.Data.Volume (Volume)
 
 data Property :: Type -> Type where
@@ -23,8 +24,8 @@ data Property :: Type -> Type where
   Paused :: Property PlaybackState
   Volume :: Property Volume
 
-deriving instance Eq (Property v)
-deriving instance Show (Property v)
+deriving stock instance Eq (Property v)
+deriving stock instance Show (Property v)
 
 propertyName :: Property v -> Text
 propertyName = \case

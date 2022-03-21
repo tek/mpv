@@ -1,5 +1,6 @@
 module Mpv.Data.MpvResources where
 
+import Control.Concurrent.STM (TVar)
 import Control.Concurrent.STM.TBMQueue (TBMQueue)
 import Network.Socket (Socket)
 
@@ -10,11 +11,11 @@ data InMessage fmt =
   InMessage { unInMessage :: fmt }
   |
   InMessageError { error :: Text }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
 
 newtype OutMessage fmt =
   OutMessage { unOutMessage :: fmt }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
 
 data Requests fmt =
   Requests {

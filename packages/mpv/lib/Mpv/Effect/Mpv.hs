@@ -1,8 +1,9 @@
 {-# options_haddock prune #-}
+
 -- |Description: Mpv Effect
 module Mpv.Effect.Mpv where
 
-import Polysemy.Time (Seconds (Seconds), TimeUnit)
+import Polysemy.Time (Seconds (Seconds))
 
 import Mpv.Data.Command (Command, CycleDirection)
 import Mpv.Data.Property (Property)

@@ -1,5 +1,7 @@
 module Mpv.Data.AudioTrack where
 
+import Polysemy.Time.Json (json)
+
 import Mpv.Data.AudioId (AudioId)
 
 data AudioTrack =
@@ -8,6 +10,6 @@ data AudioTrack =
     selected :: Bool,
     language :: Maybe Text
   }
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
 
-defaultJson ''AudioTrack
+json ''AudioTrack

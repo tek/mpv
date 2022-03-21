@@ -1,12 +1,14 @@
 module Mpv.Data.PlaybackState where
 
+import Polysemy.Time.Json (json)
+
 data PlaybackState =
   Playing
   |
   Paused
-  deriving (Eq, Show, Generic)
+  deriving stock (Eq, Show, Generic)
 
-defaultJson ''PlaybackState
+json ''PlaybackState
 
 fromBool :: Bool -> PlaybackState
 fromBool s =

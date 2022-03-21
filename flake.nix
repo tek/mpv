@@ -8,18 +8,23 @@
   let
     overrides = { hackage, source, jailbreak, unbreak, ... }:
     {
-      exon = hackage "0.2.0.1" "0hs0xrh1v64l1n4zqx3rqfjdh6czxm7av85kj1awya9zxcfcy5cl";
+      exon = hackage "0.3.0.0" "0jgpj8818nhwmb3271ixid38mx11illlslyi69s4m0ws138v6i18";
       flatparse = unbreak;
-      polysemy-conc = hackage "0.5.0.0" "0dv3naixsv8fbwqdfa4j2wg1xjlrk1w80v6wclg96rlaisxgsxlg";
-      polysemy-log = hackage "0.3.0.2" "075psivybvv2vjgna43nhc53w7ick68y1ycsc6qr45nwignjakfq";
+      incipit = hackage "0.2.1.0" "1rxry273zv4h7rg29wwbj1caiaa56zi7f08bf0l9m5kj68y7c7i8";
+      polysemy-conc = hackage "0.7.0.0" "1nin6k5vcpj9lll9ravk42rpbdymrjaawvzbdc8b2bivf39d2dfj";
+      polysemy-log = hackage "0.6.0.1" "18p5sl304nf7pf6b8bfvbkwp1jsms24ym9hh3dmsppxk38fljixj";
     };
 
-  in hix.flake {
+  in hix.lib.flake ({ config, lib, ... }: {
     base = ./.;
     inherit overrides;
     deps = [polysemy-conc];
     packages.mpv = ./packages/mpv;
-    ghci.extraArgs = ["-fplugin=Polysemy.Plugin"];
-    compat = false;
-  };
+    hpack.packages = import ./ops/hpack.nix { inherit config lib; };
+    hackage.versionFile = "ops/version.nix";
+    ghci = {
+      args = ["-fplugin=Polysemy.Plugin"];
+      preludePackage = "incipit";
+    };
+  });
 }

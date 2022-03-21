@@ -1,7 +1,6 @@
 module Mpv.Effect.Ipc where
 
 import Data.Some (Some)
-import Polysemy.Time (TimeUnit)
 
 import Mpv.Data.Event (Event)
 import Mpv.Data.EventName (EventName)

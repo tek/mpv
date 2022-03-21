@@ -1,7 +1,8 @@
 module Mpv.Data.EventPayload where
 
+import Data.Aeson (FromJSON (parseJSON), ToJSON (toJSON), withText)
+import Polysemy.Time.Json (json)
 import Prelude hiding (Stop)
-import Data.Aeson (withText)
 
 data EndReason =
   Quit
@@ -15,7 +16,7 @@ data EndReason =
   Redirect
   |
   Unknown
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
 endReasonFromText :: Text -> EndReason
 endReasonFromText = \case
@@ -48,18 +49,18 @@ data EndFile =
     playlist_entry_id :: Int,
     reason :: EndReason
   }
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
-defaultJson ''EndFile
+json ''EndFile
 
 data FileLoaded =
   FileLoaded
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
-defaultJson ''FileLoaded
+json ''FileLoaded
 
 data Pause =
   Pause
-  deriving (Eq, Show)
+  deriving stock (Eq, Show)
 
-defaultJson ''Pause
+json ''Pause
