@@ -1,3 +1,5 @@
+{-# language CPP #-}
+
 module Mpv.Process where
 
 import Exon (exon)
@@ -9,6 +11,10 @@ import System.Process.Typed (Process, ProcessConfig, proc, startProcess, stopPro
 import qualified Mpv.Data.MpvError as MpvError
 import Mpv.Data.MpvError (MpvError (MpvError))
 import Mpv.Data.MpvProcessConfig (MpvProcessConfig (MpvProcessConfig))
+
+#if !MIN_VERSION_GLASGOW_HASKELL(9,0,0,0)
+import Path (Rel)
+#endif
 
 tempSocket ::
   Member (Embed IO) r =>

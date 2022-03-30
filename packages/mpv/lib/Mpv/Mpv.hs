@@ -56,7 +56,8 @@ info = do
   (_, audio, subs) <- tracks
   subDelay <- Mpv.prop Property.SubDelay
   audioDelay <- Mpv.prop Property.AudioDelay
-  pure (MpvInfo playback duration progress expired subs subDelay audio audioDelay)
+  volume <- Mpv.prop Property.Volume
+  pure (MpvInfo playback duration progress expired subs subDelay audio audioDelay volume)
 
 adjustVolumeBy ::
   Member Mpv r =>

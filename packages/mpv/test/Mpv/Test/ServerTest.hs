@@ -1,3 +1,5 @@
+{-# language CPP #-}
+
 module Mpv.Test.ServerTest where
 
 import Path (Abs, File, Path, relfile)
@@ -14,6 +16,10 @@ import qualified Mpv.Effect.Mpv as Mpv
 import Mpv.Effect.Mpv (Mpv)
 import Mpv.Interpreter.MpvServer (interpretMpvClient, withMpvServer)
 import Mpv.Test.Run (runTest)
+
+#if !MIN_VERSION_GLASGOW_HASKELL(9,0,0,0)
+import Path (Rel)
+#endif
 
 main ::
   Member (Hedgehog IO) r =>

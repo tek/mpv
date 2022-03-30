@@ -11,6 +11,7 @@ import Mpv.Data.Subtitles (Subtitles)
 import Mpv.Data.VideoDuration (VideoDuration)
 import Mpv.Data.VideoExpired (VideoExpired)
 import Mpv.Data.VideoProgress (VideoProgress)
+import Mpv.Data.Volume (Volume)
 
 data MpvInfo =
   MpvInfo {
@@ -21,7 +22,8 @@ data MpvInfo =
     _subtitles :: Subtitles,
     _subDelay :: SubDelay,
     _audio :: AudioTracks,
-    _audioDelay :: AudioDelay
+    _audioDelay :: AudioDelay,
+    _volume :: Volume
   }
   deriving stock (Eq, Show, Generic)
 

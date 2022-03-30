@@ -1,3 +1,5 @@
+{-# language CPP #-}
+
 module Mpv.Test.MpvTest where
 
 import qualified Data.List.NonEmpty as NonEmpty
@@ -20,6 +22,10 @@ import Mpv.Interpreter.Mpv (interpretMpvNative, withMpv)
 import qualified Mpv.Mpv as Mpv
 import Mpv.Mpv (addAudioDelay, adjustVolumeBy, setDefaultOptions, togglePlaybackState)
 import Mpv.Test.Run (runTest)
+
+#if !MIN_VERSION_GLASGOW_HASKELL(9,0,0,0)
+import Path (File, Rel)
+#endif
 
 trackList :: NonEmpty Track
 trackList =

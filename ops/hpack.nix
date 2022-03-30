@@ -81,11 +81,7 @@ in {
     synopsis = "Mpv Client for Polysemy";
     library.dependencies = [
       "aeson >= 1.4"
-      "composition"
-      "containers"
-      "data-default"
       "dependent-sum-template"
-      "either"
       "exon"
       "extra"
       "lens"
@@ -96,14 +92,11 @@ in {
       "polysemy-conc"
       "polysemy-log >= 0.3.0.2"
       "polysemy-plugin >= 0.3"
-      "polysemy-resume"
       "polysemy-time"
-      "process"
       "some"
       "sop-core"
       "stm-chans"
       "template-haskell"
-      "text"
       "typed-process"
     ];
     tests = {
