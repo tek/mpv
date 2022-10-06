@@ -1,10 +1,10 @@
 -- |Description: Mpv Client/Server Interpreters
 module Mpv.Interpreter.MpvServer where
 
+import Conc (ChanConsumer, Scoped_, interpretQueueTBM, withAsync_)
 import Data.Some (withSome)
 import Exon (exon)
 import qualified Polysemy.Conc as Conc
-import Polysemy.Conc (ChanConsumer, interpretQueueTBM, withAsync_)
 import qualified Polysemy.Conc.Data.QueueResult as QueueResult
 import qualified Polysemy.Conc.Queue as Queue
 import Polysemy.Internal.Tactics (liftT)
@@ -40,7 +40,7 @@ dispatch cmd result = do
   embed (putMVar result r)
 
 serverActive ::
-  Members [Queue (Control command), Scoped resource (Ipc fmt command !! MpvError), Log, Embed IO] r =>
+  Members [Queue (Control command), Scoped_ resource (Ipc fmt command !! MpvError), Log, Embed IO] r =>
   Sem r ()
 serverActive =
   withIpc spin
@@ -58,7 +58,7 @@ serverActive =
           unit
 
 serverIdle ::
-  Members [Queue (Control command), Scoped resource (Ipc fmt command !! MpvError), Log, Embed IO] r =>
+  Members [Queue (Control command), Scoped_ resource (Ipc fmt command !! MpvError), Log, Embed IO] r =>
   Sem r ()
 serverIdle =
   Queue.peek >>= \case

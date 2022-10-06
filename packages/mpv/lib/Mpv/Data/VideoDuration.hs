@@ -1,7 +1,6 @@
 module Mpv.Data.VideoDuration where
 
 import Polysemy.Time (NanoSeconds)
-import Polysemy.Time.Json (json)
 
 newtype VideoDuration =
   VideoDuration { unVideoDuration :: NanoSeconds }

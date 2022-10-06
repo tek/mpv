@@ -31,7 +31,7 @@ percentToRatio ::
   Double ->
   a
 percentToRatio pos =
-  fromRational (toRational (min 1 (max 0 (pos / 100))))
+  fromRational (toRational (min 1 (max 0 (fromMaybe 0 (pos / 100)))))
 
 ratioToPercent ::
   Real a =>
@@ -50,7 +50,7 @@ secondsFrac ::
   u ->
   Double
 secondsFrac u =
-  fromIntegral (unNanoSeconds (convert u)) / 1e9
+  fromMaybe 0 (fromIntegral (unNanoSeconds (convert u)) / 1e9)
 
 encodeCommand ::
   Text ->

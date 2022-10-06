@@ -1,7 +1,5 @@
 module Mpv.Data.PlaybackState where
 
-import Polysemy.Time.Json (json)
-
 data PlaybackState =
   Playing
   |

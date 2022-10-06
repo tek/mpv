@@ -1,7 +1,6 @@
 module Mpv.Data.Request where
 
 import Data.Aeson (Value)
-import Polysemy.Time.Json (json)
 
 import Mpv.Data.RequestId (RequestId)
 

@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 
@@ -99,6 +99,7 @@ library
       DisambiguateRecordFields
       DoAndIfThenElse
       DuplicateRecordFields
+      EmptyCase
       EmptyDataDecls
       ExistentialQuantification
       FlexibleContexts
@@ -113,8 +114,9 @@ library
       MultiParamTypeClasses
       MultiWayIf
       NamedFieldPuns
-      OverloadedStrings
+      OverloadedLabels
       OverloadedLists
+      OverloadedStrings
       PackageImports
       PartialTypeSignatures
       PatternGuards
@@ -145,7 +147,6 @@ library
     , dependent-sum-template
     , exon
     , extra
-    , incipit
     , lens
     , network
     , path
@@ -155,6 +156,7 @@ library
     , polysemy-log >=0.3.0.2
     , polysemy-plugin >=0.3
     , polysemy-time
+    , prelate ==0.1.*
     , some
     , sop-core
     , stm-chans
@@ -162,6 +164,8 @@ library
     , typed-process
   mixins:
       base hiding (Prelude)
+    , prelate (Prelate as Prelude)
+    , prelate hiding (Prelate)
   default-language: Haskell2010
 
 test-suite mpv-unit
@@ -196,6 +200,7 @@ test-suite mpv-unit
       DisambiguateRecordFields
       DoAndIfThenElse
       DuplicateRecordFields
+      EmptyCase
       EmptyDataDecls
       ExistentialQuantification
       FlexibleContexts
@@ -210,8 +215,9 @@ test-suite mpv-unit
       MultiParamTypeClasses
       MultiWayIf
       NamedFieldPuns
-      OverloadedStrings
+      OverloadedLabels
       OverloadedLists
+      OverloadedStrings
       PackageImports
       PartialTypeSignatures
       PatternGuards
@@ -238,7 +244,7 @@ test-suite mpv-unit
   ghc-options: -Wall -Wredundant-constraints -Wincomplete-uni-patterns -Wmissing-deriving-strategies -Widentities -Wunused-packages -fplugin=Polysemy.Plugin -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.12 && <5
-    , incipit
+    , hedgehog
     , mpv
     , path
     , polysemy >=1.5
@@ -247,8 +253,11 @@ test-suite mpv-unit
     , polysemy-plugin >=0.3
     , polysemy-test
     , polysemy-time
+    , prelate ==0.1.*
     , tasty
     , tasty-expected-failure
   mixins:
       base hiding (Prelude)
+    , prelate (Prelate as Prelude)
+    , prelate hiding (Prelate)
   default-language: Haskell2010

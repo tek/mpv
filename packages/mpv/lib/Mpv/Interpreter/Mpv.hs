@@ -1,9 +1,7 @@
 module Mpv.Interpreter.Mpv where
 
+import Conc (ChanConsumer, Consume, Scoped_, interpretEventsChan, runScoped, scoped_)
 import Data.Aeson (Value)
-import Polysemy.Conc (ChanConsumer, interpretEventsChan)
-import Polysemy.Conc.Effect.Events (Consume)
-import Polysemy.Conc.Interpreter.Scoped (runScoped)
 
 import qualified Mpv.Data.Command as Command
 import Mpv.Data.Command (Command)
@@ -72,20 +70,20 @@ interpretMpvResources = \case
 
 interpretMpvNative ::
   Members [Reader MpvProcessConfig, Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
-  InterpretersFor [Scoped (Either MpvError (MpvResources Value)) (Mpv !! MpvError), ChanConsumer MpvEvent] r
+  InterpretersFor [Scoped_ (Either MpvError (MpvResources Value)) (Mpv !! MpvError), ChanConsumer MpvEvent] r
 interpretMpvNative =
   interpretEventsChan .
-  runScoped withMpvResources interpretMpvResources .
+  runScoped (const withMpvResources) interpretMpvResources .
   raiseUnder
 
 withMpv ::
-  Member (Scoped resource (Mpv !! MpvError)) r =>
+  Member (Scoped_ resource (Mpv !! MpvError)) r =>
   InterpreterFor (Mpv !! MpvError) r
 withMpv =
-  scoped
+  scoped_
 
 events ::
   Member (EventConsumer token MpvEvent) r =>
   InterpreterFor (Consume MpvEvent) r
 events =
-  scoped
+  scoped_

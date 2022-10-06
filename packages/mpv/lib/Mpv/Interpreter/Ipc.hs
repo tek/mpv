@@ -1,12 +1,12 @@
 module Mpv.Interpreter.Ipc where
 
+import Conc (ChanConsumer, Scoped_, interpretEventsChan, scoped_, withAsync)
 import Data.Aeson (Value)
 import qualified Data.Map.Strict as Map
 import Data.Some (Some)
 import Exon (exon)
 import qualified Polysemy.Conc as Race
 import qualified Polysemy.Conc as Events
-import Polysemy.Conc (ChanConsumer, interpretEventsChan, withAsync)
 import Polysemy.Conc.Interpreter.Queue.TBM (interpretQueueTBMWith)
 import Polysemy.Conc.Interpreter.Scoped (runScoped)
 import qualified Polysemy.Conc.Queue as Queue
@@ -120,19 +120,20 @@ interpretIpcResources = \case
   Left err ->
     interpretResumableH \ _ -> stop err
 
+-- TODO convert to interpretScopedRWithH
 interpretIpcNative ::
   Members [Reader MpvProcessConfig, Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
   InterpretersFor [
-    Scoped (Either MpvError (MpvResources Value)) (Ipc Value Command !! MpvError),
+    Scoped_ (Either MpvError (MpvResources Value)) (Ipc Value Command !! MpvError),
     ChanConsumer MpvEvent
   ] r
 interpretIpcNative =
   interpretEventsChan .
-  runScoped withMpvResources interpretIpcResources .
+  runScoped (const withMpvResources) interpretIpcResources .
   raiseUnder
 
 withIpc ::
-  Member (Scoped resource (Ipc fmt command !! MpvError)) r =>
+  Member (Scoped_ resource (Ipc fmt command !! MpvError)) r =>
   InterpreterFor (Ipc fmt command !! MpvError) r
 withIpc =
-  scoped
+  scoped_

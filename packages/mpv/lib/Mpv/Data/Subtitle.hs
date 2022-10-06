@@ -1,7 +1,5 @@
 module Mpv.Data.Subtitle where
 
-import Polysemy.Time.Json (json)
-
 import Mpv.Data.SubtitleId (SubtitleId)
 
 data Subtitle =

@@ -1,7 +1,5 @@
 module Mpv.Data.VideoTracks where
 
-import Polysemy.Time.Json (json)
-
 import Mpv.Data.VideoId (VideoId)
 import Mpv.Data.VideoTrack (VideoTrack)
 

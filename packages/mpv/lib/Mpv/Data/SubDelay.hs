@@ -1,6 +1,5 @@
 module Mpv.Data.SubDelay where
 
-import Polysemy.Time.Json (json)
 import Polysemy.Time (NanoSeconds)
 
 newtype SubDelay =

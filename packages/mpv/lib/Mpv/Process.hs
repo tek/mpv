@@ -72,7 +72,7 @@ startMpvProcess ::
   Path Abs File ->
   Sem r (Either MpvError (Process () () ()))
 startMpvProcess socket =
-  runError do
+  errorToIOFinal do
     MpvProcessConfig path <- ask
     validatedPath <- findExecutable path
     fromExceptionVia @SomeException (MpvError.Fatal . show) (startProcess (mpvProc validatedPath socket))

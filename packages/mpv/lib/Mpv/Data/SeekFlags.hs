@@ -1,7 +1,5 @@
 module Mpv.Data.SeekFlags where
 
-import Polysemy.Time.Json (json)
-
 data SeekReference =
   Absolute
   |

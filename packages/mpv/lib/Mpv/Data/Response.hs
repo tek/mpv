@@ -1,7 +1,5 @@
 module Mpv.Data.Response where
 
-import Polysemy.Time.Json (json)
-
 import Mpv.Data.RequestId (RequestId)
 
 newtype ResponseError =

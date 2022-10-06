@@ -1,7 +1,6 @@
 module Mpv.Data.VideoExpired where
 
 import Polysemy.Time (NanoSeconds)
-import Polysemy.Time.Json (json)
 
 newtype VideoExpired =
   VideoExpired { unVideoExpired :: NanoSeconds }

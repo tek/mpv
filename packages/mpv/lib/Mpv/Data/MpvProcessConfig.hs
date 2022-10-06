@@ -1,7 +1,6 @@
 module Mpv.Data.MpvProcessConfig where
 
 import Path (Abs, File, Path)
-import Polysemy.Time.Json (json)
 
 data MpvProcessConfig =
   MpvProcessConfig {

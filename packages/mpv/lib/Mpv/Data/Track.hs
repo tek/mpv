@@ -2,7 +2,6 @@ module Mpv.Data.Track where
 
 import Data.Aeson (FromJSON (parseJSON), ToJSON (toJSON), withText)
 import Exon (exon)
-import Polysemy.Time.Json (json)
 
 data TrackType =
   Audio

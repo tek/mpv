@@ -1,7 +1,6 @@
 module Mpv.Data.EventPayload where
 
 import Data.Aeson (FromJSON (parseJSON), ToJSON (toJSON), withText)
-import Polysemy.Time.Json (json)
 import Prelude hiding (Stop)
 
 data EndReason =

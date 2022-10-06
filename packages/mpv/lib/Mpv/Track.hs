@@ -1,7 +1,6 @@
 module Mpv.Track where
 
-import Control.Lens (_1, _2, _3, view)
-import Data.List.Extra (firstJust)
+import Lens.Micro.Extras (view)
 
 import Mpv.Data.AudioId (AudioId (AudioId))
 import Mpv.Data.AudioTrack (AudioTrack (AudioTrack))

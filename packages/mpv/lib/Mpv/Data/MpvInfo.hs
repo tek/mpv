@@ -1,7 +1,6 @@
 module Mpv.Data.MpvInfo where
 
 import Control.Lens (makeClassy)
-import Polysemy.Time.Json (json)
 
 import Mpv.Data.AudioDelay (AudioDelay)
 import Mpv.Data.AudioTracks (AudioTracks)

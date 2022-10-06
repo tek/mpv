@@ -37,12 +37,6 @@ let
     build-type = "Simple";
   };
 
-  base = {
-    name = "base";
-    version = ">= 4.12 && < 5";
-    mixin = "hiding (Prelude)";
-  };
-
   options.ghc-options = [
     "-Wall"
     "-Wredundant-constraints"
@@ -53,7 +47,12 @@ let
     "-fplugin=Polysemy.Plugin"
   ];
 
-  dependencies = [base "incipit" "polysemy" "polysemy-plugin"];
+  dependencies = [
+    { name = "base"; version = ">= 4.12 && < 5"; mixin = "hiding (Prelude)"; }
+    { name = "prelate"; version = "^>= 0.1"; mixin = ["(Prelate as Prelude)" "hiding (Prelate)"]; }
+    "polysemy >= 1.6"
+    "polysemy-plugin >= 0.4"
+  ];
 
   project = name: merge (meta // { library = paths name; } // options) {
     inherit name;
@@ -102,6 +101,7 @@ in {
     tests = {
       mpv-unit = exe "mpv" "test" {
         dependencies = [
+          "hedgehog"
           "mpv"
           "path"
           "polysemy >= 1.5"

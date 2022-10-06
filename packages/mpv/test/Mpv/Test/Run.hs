@@ -1,5 +1,6 @@
 module Mpv.Test.Run where
 
+import Hedgehog.Internal.Property (Failure)
 import Polysemy.Conc (interpretRace)
 import Polysemy.Log (interpretLogStdoutConc)
 import Polysemy.Test (Hedgehog, Test, TestError, UnitTest, runTestAuto)
@@ -18,6 +19,7 @@ type TestEffects =
     Fail,
     Error TestError,
     Hedgehog IO,
+    Error Failure,
     Embed IO,
     Resource,
     Final IO

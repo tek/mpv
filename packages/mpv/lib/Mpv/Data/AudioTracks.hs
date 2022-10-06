@@ -1,7 +1,5 @@
 module Mpv.Data.AudioTracks where
 
-import Polysemy.Time.Json (json)
-
 import Mpv.Data.AudioId (AudioId)
 import Mpv.Data.AudioTrack (AudioTrack)
 

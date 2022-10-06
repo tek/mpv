@@ -1,7 +1,7 @@
 module Mpv.Json where
 
 import qualified Data.Aeson as Aeson
-import Data.Aeson (FromJSON, SumEncoding (UntaggedValue), Value, camelTo2, fromJSON)
+import Data.Aeson (SumEncoding (UntaggedValue), Value, camelTo2, fromJSON)
 import Data.Aeson.TH (deriveJSON)
 import Data.List (dropWhileEnd)
 import qualified Language.Haskell.TH as TH

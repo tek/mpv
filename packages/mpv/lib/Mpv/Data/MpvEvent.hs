@@ -1,6 +1,6 @@
 module Mpv.Data.MpvEvent where
 
-import Data.Aeson (FromJSON (parseJSON), ToJSON, withObject, (.:))
+import Data.Aeson (FromJSON (parseJSON), withObject, (.:))
 import Data.Some (Some (Some))
 import Polysemy.Conc (ChanConsumer)
 
