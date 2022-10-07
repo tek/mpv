@@ -2,12 +2,13 @@ module Mpv.Socket where
 
 import qualified Network.Socket as Socket
 import Network.Socket (SockAddr (SockAddrUnix), Socket)
-import Path (Abs, File, Path, toFilePath)
+import Path (toFilePath)
 import Polysemy.Conc (retryingWithError)
 import Polysemy.Time (MilliSeconds (MilliSeconds), Seconds (Seconds))
 
 import qualified Mpv.Data.MpvError as MpvError
 import Mpv.Data.MpvError (MpvError)
+import Mpv.Data.SocketPath (SocketPath (SocketPath))
 
 unixSocket ::
   Members [Stop MpvError, Embed IO] r =>
@@ -17,15 +18,15 @@ unixSocket =
 
 connectSocket ::
   Member (Embed IO) r =>
-  Path Abs File ->
+  SocketPath ->
   Socket ->
   Sem r (Either Text ())
-connectSocket path socket =
+connectSocket (SocketPath path) socket =
   tryIOError (Socket.connect socket (SockAddrUnix (toFilePath path)))
 
 acquireSocket ::
   Members [Stop MpvError, Race, Time t d, Embed IO] r =>
-  Path Abs File ->
+  SocketPath ->
   Sem r Socket
 acquireSocket path = do
   socket <- unixSocket
@@ -36,7 +37,7 @@ acquireSocket path = do
 
 withSocket ::
   Members [Stop MpvError, Resource, Race, Time t d, Embed IO] r =>
-  Path Abs File ->
+  SocketPath ->
   (Socket -> Sem r a) ->
   Sem r a
 withSocket path =

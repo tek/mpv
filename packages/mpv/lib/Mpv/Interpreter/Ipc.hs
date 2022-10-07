@@ -19,6 +19,7 @@ import qualified Polysemy.Conc.Queue as Queue
 import Polysemy.Internal.Tactics (liftT)
 import qualified Polysemy.Log as Log
 import Polysemy.Time (Seconds (Seconds))
+import Process (SystemProcess)
 
 import Mpv.Data.Command (Command)
 import Mpv.Data.Event (Event)
@@ -30,6 +31,7 @@ import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
 import Mpv.Data.MpvResources (InMessage, OutMessage (OutMessage), Requests (Requests))
 import Mpv.Data.RequestId (RequestId)
 import Mpv.Data.Response (ResponseError (ResponseError))
+import Mpv.Data.SocketPath (SocketPath)
 import qualified Mpv.Effect.Commands as Commands
 import Mpv.Effect.Commands (Commands)
 import qualified Mpv.Effect.Ipc as Ipc
@@ -37,7 +39,7 @@ import Mpv.Effect.Ipc (Ipc)
 import qualified Mpv.Effect.MpvServer as MpvServer
 import Mpv.Effect.MpvServer (MpvServer)
 import Mpv.Interpreter.Commands (interpretCommandsJson)
-import Mpv.Process (withSocketQueuesMpv)
+import Mpv.Process (interpretMpvProcess, withSocketQueuesMpv)
 import Mpv.Response (withResponseListener)
 
 createRequest ::
@@ -119,20 +121,24 @@ type IpcScope fmt =
   [AtomicState (Requests fmt), Queue (OutMessage fmt), Queue (InMessage fmt)]
 
 ipcScope ::
+  Show pse =>
+  Member (Scoped SocketPath pres (SystemProcess !! pe) !! pse) r =>
   Members [ChanEvents MpvEvent, Commands Value Command, ChanConsumer MpvEvent] r =>
-  Members [Reader MpvProcessConfig, Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
+  Members [Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
   (() -> Sem (IpcScope Value ++ Stop MpvError : r) a) ->
   Sem (Stop MpvError : r) a
 ipcScope use =
   withSocketQueuesMpv $ withResponseListener $ use ()
 
 interpretIpc ::
+  Show pse =>
+  Member (Scoped SocketPath pres (SystemProcess !! pe) !! pse) r =>
   Members [Commands Value Command, ChanEvents MpvEvent, ChanConsumer MpvEvent] r =>
-  Members [Reader MpvProcessConfig, Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
+  Members [Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
   InterpreterFor (Scoped_ () (Ipc Value Command !! MpvError) !! MpvError) r
 interpretIpc =
   interpretScopedRWithH @(IpcScope _) (const ipcScope) \ _ -> \case
-    Ipc.Sync cmd -> do
+    Ipc.Sync cmd ->
       liftT (syncRequest cmd)
     Ipc.WaitEvent name interval ma -> do
       (found, res) <- waitEventAndRun name interval (runTSimple ma)
@@ -146,9 +152,10 @@ interpretIpcNative ::
   ] r
 interpretIpcNative =
   interpretEventsChan .
+  interpretMpvProcess .
   interpretCommandsJson .
   interpretIpc .
-  raiseUnder2
+  raiseUnder3
 
 interpretIpcClient ::
   Member (MpvServer command !! MpvError) r =>

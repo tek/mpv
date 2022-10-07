@@ -43,6 +43,7 @@ library
       Mpv.Data.Response
       Mpv.Data.Seek
       Mpv.Data.SeekFlags
+      Mpv.Data.SocketPath
       Mpv.Data.SubDelay
       Mpv.Data.SubFps
       Mpv.Data.Subtitle

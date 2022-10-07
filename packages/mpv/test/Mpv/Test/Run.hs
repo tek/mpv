@@ -1,8 +1,8 @@
 module Mpv.Test.Run where
 
 import Hedgehog.Internal.Property (Failure)
+import Log (Severity (Debug, Error), interpretLogStdoutLevelConc)
 import Polysemy.Conc (interpretRace)
-import Polysemy.Log (interpretLogStdoutConc)
 import Polysemy.Test (Hedgehog, Test, TestError, UnitTest, runTestAuto)
 import Polysemy.Time (GhcTime, interpretTimeGhc)
 
@@ -27,14 +27,27 @@ type TestEffects =
     Final IO
   ]
 
+runTestLevel ::
+  Severity ->
+  Sem TestEffects () ->
+  UnitTest
+runTestLevel level =
+  runTestAuto .
+  asyncToIOFinal .
+  interpretRace .
+  interpretLogStdoutLevelConc (Just level) .
+  interpretTimeGhc .
+  stopToErrorWith show .
+  runReader def
+
+runTestDebug ::
+  Sem TestEffects () ->
+  UnitTest
+runTestDebug =
+  runTestLevel Debug
+
 runTest ::
   Sem TestEffects () ->
   UnitTest
 runTest =
-  runTestAuto .
-  asyncToIOFinal .
-  interpretRace .
-  interpretLogStdoutConc .
-  interpretTimeGhc .
-  stopToErrorWith show .
-  runReader def
+  runTestLevel Error

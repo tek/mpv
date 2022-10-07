@@ -1,5 +1,6 @@
 module Mpv.SocketQueues where
 
+import Conc (interpretQueueTBM, withAsync_)
 import qualified Data.Aeson as Aeson
 import Data.Aeson (Value)
 import qualified Data.ByteString as ByteString
@@ -80,3 +81,13 @@ writeQueue socket =
           Log.debug [exon|mpv write socket terminated: #{err}|]
     _ ->
       unit
+
+withSocketQueues ::
+  Members [Log, Resource, Race, Async, Embed IO] r =>
+  Socket ->
+  InterpretersFor [Queue (OutMessage Value), Queue (InMessage Value)] r
+withSocketQueues socket =
+  interpretQueueTBM @(InMessage Value) 64 .
+  interpretQueueTBM @(OutMessage Value) 64 .
+  withAsync_ (readQueue socket) .
+  withAsync_ (writeQueue socket)
