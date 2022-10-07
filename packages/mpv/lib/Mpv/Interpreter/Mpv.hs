@@ -1,7 +1,6 @@
 module Mpv.Interpreter.Mpv where
 
-import Conc (ChanConsumer, Consume, Scoped_, interpretEventsChan, runScoped, scoped_)
-import Data.Aeson (Value)
+import Conc (ChanConsumer, Consume, Scoped_, interpretScopedRWith, scoped_)
 
 import qualified Mpv.Data.Command as Command
 import Mpv.Data.Command (Command)
@@ -9,15 +8,12 @@ import Mpv.Data.EventName (EventName (EndFile, FileLoaded))
 import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvEvent (MpvEvent)
 import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
-import Mpv.Data.MpvResources (MpvResources)
 import qualified Mpv.Effect.Ipc as Ipc
-import Mpv.Effect.Ipc (Ipc)
+import Mpv.Effect.Ipc (Ipc, withIpc)
 import qualified Mpv.Effect.Mpv as Mpv
 import Mpv.Effect.Mpv (Mpv)
-import Mpv.Interpreter.Commands (interpretCommandsJson)
-import Mpv.Interpreter.Ipc (interpretIpc)
+import Mpv.Interpreter.Ipc (interpretIpcNative)
 import Mpv.MpvError (optionError, propError, setPropError)
-import Mpv.MpvResources (withMpvResources)
 
 commandEvent :: Command a -> Maybe EventName
 commandEvent = \case
@@ -38,49 +34,57 @@ waitEventCmd wait (commandEvent -> Just event) ma =
 waitEventCmd _ _ ma =
   ma
 
-interpretMpvIpc ::
+type MpvScope fmt =
+  '[Ipc fmt Command !! MpvError]
+
+mpvScope ::
+  ∀ resource fmt r a .
+  Member (Scoped_ resource (Ipc fmt Command !! MpvError) !! MpvError) r =>
+  (() -> Sem (MpvScope fmt ++ Stop MpvError : r) a) ->
+  Sem (Stop MpvError : r) a
+mpvScope use =
+  withIpc (use ())
+
+handleMpvIpc ::
+  Members [Ipc fmt Command !! MpvError, Stop MpvError] r =>
+  Mpv m a ->
+  Sem r a
+handleMpvIpc = \case
+  Mpv.CommandSync wait cmd ->
+    restop (waitEventCmd wait cmd (Ipc.sync cmd))
+  Mpv.Prop prop ->
+    resumeHoist (propError prop) (Ipc.sync (Command.Prop prop))
+  Mpv.SetProp prop value ->
+    resumeHoist (setPropError prop) (Ipc.sync (Command.SetProp prop value))
+  Mpv.AddProp prop value ->
+    resumeHoist (setPropError prop) (Ipc.sync (Command.AddProp prop value))
+  Mpv.CycleProp prop direction ->
+    resumeHoist (setPropError prop) (Ipc.sync (Command.CycleProp prop direction))
+  Mpv.MultiplyProp prop value ->
+    resumeHoist (setPropError prop) (Ipc.sync (Command.MultiplyProp prop value))
+  Mpv.SetOption key value ->
+    resumeHoist (optionError key value) (Ipc.sync (Command.SetOption key value))
+
+interpretMpvIpcClient ::
   Member (Ipc fmt Command !! MpvError) r =>
   InterpreterFor (Mpv !! MpvError) r
-interpretMpvIpc =
-  interpretResumable \case
-    Mpv.CommandSync wait cmd ->
-      restop (waitEventCmd wait cmd (Ipc.sync cmd))
-    Mpv.Prop prop ->
-      resumeHoist (propError prop) (Ipc.sync (Command.Prop prop))
-    Mpv.SetProp prop value ->
-      resumeHoist (setPropError prop) (Ipc.sync (Command.SetProp prop value))
-    Mpv.AddProp prop value ->
-      resumeHoist (setPropError prop) (Ipc.sync (Command.AddProp prop value))
-    Mpv.CycleProp prop direction ->
-      resumeHoist (setPropError prop) (Ipc.sync (Command.CycleProp prop direction))
-    Mpv.MultiplyProp prop value ->
-      resumeHoist (setPropError prop) (Ipc.sync (Command.MultiplyProp prop value))
-    Mpv.SetOption key value ->
-      resumeHoist (optionError key value) (Ipc.sync (Command.SetOption key value))
+interpretMpvIpcClient =
+  interpretResumable handleMpvIpc
 
-interpretMpvResources ::
-  Members [EventConsumer token MpvEvent, Resource, Async, Race, Log, Embed IO, Final IO] r =>
-  Either MpvError (MpvResources Value) ->
-  InterpreterFor (Mpv !! MpvError) r
-interpretMpvResources = \case
-  Right res ->
-    interpretCommandsJson . interpretIpc res . interpretMpvIpc . raiseUnder2
-  Left err ->
-    interpretResumableH \ _ -> stop err
+interpretMpvIpcServer ::
+  ∀ resource fmt r .
+  Member (Scoped_ resource (Ipc fmt Command !! MpvError) !! MpvError) r =>
+  InterpreterFor (Scoped_ () (Mpv !! MpvError) !! MpvError) r
+interpretMpvIpcServer =
+  interpretScopedRWith @(MpvScope _) (const mpvScope) \ _ -> handleMpvIpc
 
 interpretMpvNative ::
   Members [Reader MpvProcessConfig, Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
-  InterpretersFor [Scoped_ (Either MpvError (MpvResources Value)) (Mpv !! MpvError), ChanConsumer MpvEvent] r
+  InterpretersFor [Scoped_ () (Mpv !! MpvError) !! MpvError, ChanConsumer MpvEvent] r
 interpretMpvNative =
-  interpretEventsChan .
-  runScoped (const withMpvResources) interpretMpvResources .
+  interpretIpcNative .
+  interpretMpvIpcServer .
   raiseUnder
-
-withMpv ::
-  Member (Scoped_ resource (Mpv !! MpvError)) r =>
-  InterpreterFor (Mpv !! MpvError) r
-withMpv =
-  scoped_
 
 events ::
   Member (EventConsumer token MpvEvent) r =>

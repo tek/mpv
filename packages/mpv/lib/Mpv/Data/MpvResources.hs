@@ -1,9 +1,5 @@
 module Mpv.Data.MpvResources where
 
-import Control.Concurrent.STM (TVar)
-import Control.Concurrent.STM.TBMQueue (TBMQueue)
-import Network.Socket (Socket)
-
 import Mpv.Data.RequestId (RequestId)
 import Mpv.Data.Response (ResponseError)
 
@@ -21,13 +17,4 @@ data Requests fmt =
   Requests {
     nextId :: RequestId,
     pending :: Map RequestId (MVar (Either ResponseError fmt))
-  }
-  deriving stock (Eq)
-
-data MpvResources fmt =
-  MpvResources {
-    socket :: Socket,
-    outQueue :: TBMQueue (OutMessage fmt),
-    inQueue :: TBMQueue (InMessage fmt),
-    requests :: TVar (Requests fmt)
   }

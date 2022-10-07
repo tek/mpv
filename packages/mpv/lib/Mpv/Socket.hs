@@ -10,10 +10,10 @@ import qualified Mpv.Data.MpvError as MpvError
 import Mpv.Data.MpvError (MpvError)
 
 unixSocket ::
-  Members [Error MpvError, Embed IO] r =>
+  Members [Stop MpvError, Embed IO] r =>
   Sem r Socket
 unixSocket =
-  fromExceptionVia @SomeException (MpvError.Fatal . show) (Socket.socket Socket.AF_UNIX Socket.Stream 0)
+  stopTryIOError MpvError.Fatal (Socket.socket Socket.AF_UNIX Socket.Stream 0)
 
 connectSocket ::
   Member (Embed IO) r =>
@@ -21,33 +21,23 @@ connectSocket ::
   Socket ->
   Sem r (Either Text ())
 connectSocket path socket =
-  tryAny (Socket.connect socket (SockAddrUnix (toFilePath path)))
+  tryIOError (Socket.connect socket (SockAddrUnix (toFilePath path)))
 
 acquireSocket ::
-  Members [Error MpvError, Race, Time t d, Embed IO] r =>
+  Members [Stop MpvError, Race, Time t d, Embed IO] r =>
   Path Abs File ->
   Sem r Socket
 acquireSocket path = do
   socket <- unixSocket
   retryingWithError (Seconds 5) (MilliSeconds 100) (connectSocket path socket) >>= \case
     Just (Right ()) -> pure socket
-    Just (Left err) -> throw (MpvError.Fatal err)
-    Nothing -> throw (MpvError.Fatal "socket connect timed out")
-
-releaseSocket ::
-  Member (Embed IO) r =>
-  Either MpvError Socket ->
-  Sem r ()
-releaseSocket = \case
-  Right sock ->
-    void (tryAny (Socket.close sock))
-  Left _ ->
-    unit
+    Just (Left err) -> stop (MpvError.Fatal err)
+    Nothing -> stop (MpvError.Fatal "socket connect timed out")
 
 withSocket ::
-  Members [Resource, Race, Time t d, Embed IO] r =>
+  Members [Stop MpvError, Resource, Race, Time t d, Embed IO] r =>
   Path Abs File ->
-  (Either MpvError Socket -> Sem r a) ->
+  (Socket -> Sem r a) ->
   Sem r a
 withSocket path =
-  bracket (runError (acquireSocket path)) releaseSocket
+  bracket (acquireSocket path) (tryIOError_ . Socket.close)

@@ -1,23 +1,16 @@
 module Mpv.SocketQueues where
 
-import Control.Concurrent.STM.TBMQueue (TBMQueue)
 import qualified Data.Aeson as Aeson
 import Data.Aeson (Value)
 import qualified Data.ByteString as ByteString
 import Exon (exon)
 import Network.Socket (Socket)
 import qualified Network.Socket.ByteString as Socket
-import Polysemy.Conc (withAsync_)
 import qualified Polysemy.Conc.Data.QueueResult as QueueResult
-import Polysemy.Conc.Interpreter.Queue.TBM (interpretQueueTBMWith)
 import qualified Polysemy.Conc.Queue as Queue
 import qualified Polysemy.Log as Log
 
-import Mpv.Data.MpvResources (
-  InMessage (InMessage, InMessageError),
-  MpvResources (MpvResources),
-  OutMessage (OutMessage),
-  )
+import Mpv.Data.MpvResources (InMessage (InMessage, InMessageError), OutMessage (OutMessage))
 
 messageLines :: ByteString -> ([ByteString], ByteString)
 messageLines =
@@ -65,7 +58,7 @@ readQueue socket =
   spin ""
   where
     spin buf = do
-      tryAny (accumulateMessages buf <$> Socket.recv socket 4096) >>= \case
+      tryIOError (accumulateMessages buf <$> Socket.recv socket 4096) >>= \case
         Right (newBuf, complete) -> do
           traverse_ publishAsInMessage complete
           spin newBuf
@@ -80,28 +73,10 @@ writeQueue ::
 writeQueue socket =
   Queue.read >>= \case
     QueueResult.Success (OutMessage msg) ->
-      tryAny (Socket.sendAll socket (toStrict (Aeson.encode msg) <> "\n")) >>= \case
+      tryIOError (Socket.sendAll socket (toStrict (Aeson.encode msg) <> "\n")) >>= \case
         Right () ->
           writeQueue socket
         Left err ->
           Log.debug [exon|mpv write socket terminated: #{err}|]
     _ ->
       unit
-
-interpretQueues ::
-  Members [Resource, Race, Embed IO] r =>
-  TBMQueue (OutMessage fmt) ->
-  TBMQueue (InMessage fmt) ->
-  InterpretersFor [Queue (InMessage fmt), Queue (OutMessage fmt)] r
-interpretQueues outQ inQ =
-  interpretQueueTBMWith outQ .
-  interpretQueueTBMWith inQ
-
-withSocketQueues ::
-  Members [Resource, Async, Race, Log, Embed IO] r =>
-  MpvResources Value ->
-  InterpretersFor [Queue (InMessage Value), Queue (OutMessage Value)] r
-withSocketQueues (MpvResources socket outQ inQ _) =
-  interpretQueues outQ inQ .
-  withAsync_ (readQueue socket) .
-  withAsync_ (writeQueue socket)

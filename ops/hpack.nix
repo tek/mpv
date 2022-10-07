@@ -82,7 +82,6 @@ in {
       "aeson >= 1.4"
       "dependent-sum-template"
       "exon"
-      "extra"
       "lens"
       "network"
       "path"
@@ -94,7 +93,6 @@ in {
       "polysemy-time"
       "some"
       "sop-core"
-      "stm-chans"
       "template-haskell"
       "typed-process"
     ];

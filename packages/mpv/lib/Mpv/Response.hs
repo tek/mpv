@@ -1,5 +1,6 @@
 module Mpv.Response where
 
+import Conc (interpretAtomic, withAsync_)
 import Data.Aeson (Value (Null), fromJSON)
 import qualified Data.Map.Strict as Map
 import Exon (exon)
@@ -80,3 +81,9 @@ responseListener ::
   Sem r ()
 responseListener =
   Queue.loop \ msg -> processMessage msg (decodeInMessage msg)
+
+withResponseListener ::
+  Members [Events t MpvEvent, Queue (InMessage Value), Log, Resource, Race, Async, Embed IO] r =>
+  InterpreterFor (AtomicState (Requests Value)) r
+withResponseListener ma =
+  interpretAtomic (Requests 0 mempty) $ withAsync_ responseListener ma

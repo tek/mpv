@@ -3,9 +3,11 @@
 -- |Description: Mpv Effect
 module Mpv.Effect.Mpv where
 
+import Conc (Scoped_, scoped_)
 import Polysemy.Time (Seconds (Seconds))
 
 import Mpv.Data.Command (Command, CycleDirection)
+import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.Property (Property)
 
 data Mpv :: Effect where
@@ -25,3 +27,9 @@ command ::
   Sem r a
 command =
   commandSync (Seconds 1)
+
+withMpv ::
+  Member (Scoped_ resource (Mpv !! MpvError)) r =>
+  InterpreterFor (Mpv !! MpvError) r
+withMpv =
+  scoped_

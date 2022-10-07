@@ -69,7 +69,6 @@ library
       Mpv.Json
       Mpv.Mpv
       Mpv.MpvError
-      Mpv.MpvResources
       Mpv.Process
       Mpv.Response
       Mpv.Seek
@@ -146,7 +145,6 @@ library
     , base >=4.12 && <5
     , dependent-sum-template
     , exon
-    , extra
     , lens
     , network
     , path
@@ -159,7 +157,6 @@ library
     , prelate ==0.1.*
     , some
     , sop-core
-    , stm-chans
     , template-haskell
     , typed-process
   mixins:

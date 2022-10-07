@@ -2,7 +2,10 @@
 
 module Mpv.Process where
 
+import Conc (interpretQueueTBM, withAsync_)
+import Data.Aeson (Value)
 import Exon (exon)
+import Network.Socket (Socket)
 import Path (Abs, File, Path, parent, relfile, toFilePath, (</>))
 import qualified Path.IO as Path
 import Path.IO (createTempDir, executable, getPermissions, getTempDir, removeDirRecur)
@@ -11,6 +14,9 @@ import System.Process.Typed (Process, ProcessConfig, proc, startProcess, stopPro
 import qualified Mpv.Data.MpvError as MpvError
 import Mpv.Data.MpvError (MpvError (MpvError))
 import Mpv.Data.MpvProcessConfig (MpvProcessConfig (MpvProcessConfig))
+import Mpv.Data.MpvResources (InMessage, OutMessage)
+import Mpv.Socket (withSocket)
+import Mpv.SocketQueues (readQueue, writeQueue)
 
 #if !MIN_VERSION_GLASGOW_HASKELL(9,0,0,0)
 import Path (Rel)
@@ -29,7 +35,7 @@ withTempSocketPath ::
   (Path Abs File -> Sem r a) ->
   Sem r a
 withTempSocketPath =
-  bracket tempSocket (tryAny . removeDirRecur . parent)
+  bracket tempSocket (tryIOError . removeDirRecur . parent)
 
 mpvProc ::
   Path Abs File ->
@@ -43,51 +49,75 @@ mpvProc mpv socket =
   ]
 
 findExecutable ::
-  Members [Error MpvError, Embed IO] r =>
+  Members [Stop MpvError, Embed IO] r =>
   Maybe (Path Abs File) ->
   Sem r (Path Abs File)
 findExecutable = \case
   Just path -> do
-    tryAny (getPermissions path) >>= \case
+    tryIOError (getPermissions path) >>= \case
       Right (executable -> True) ->
         pure path
       Right _ ->
-        throw notExecutable
+        stop notExecutable
       Left _ ->
-        throw notExist
+        stop notExist
     where
       notExist =
         MpvError [exon|specified mpv path is not a readable file: #{show path}|]
       notExecutable =
         MpvError [exon|specified mpv path is not executable: #{show path}|]
   Nothing ->
-    tryAny (Path.findExecutable [relfile|mpv|]) >>= \case
+    tryIOError (Path.findExecutable [relfile|mpv|]) >>= \case
       Right (Just path) ->
         pure path
       _ ->
-        throw (MpvError "could not find mpv executable in $PATH.")
+        stop (MpvError "could not find mpv executable in $PATH.")
 
 startMpvProcess ::
-  Members [Reader MpvProcessConfig, Embed IO, Final IO] r =>
+  Members [Reader MpvProcessConfig, Stop MpvError, Embed IO, Final IO] r =>
   Path Abs File ->
-  Sem r (Either MpvError (Process () () ()))
-startMpvProcess socket =
-  errorToIOFinal do
-    MpvProcessConfig path <- ask
-    validatedPath <- findExecutable path
-    fromExceptionVia @SomeException (MpvError.Fatal . show) (startProcess (mpvProc validatedPath socket))
+  Sem r (Process () () ())
+startMpvProcess socket = do
+  MpvProcessConfig path <- ask
+  validatedPath <- findExecutable path
+  stopTryIOError MpvError.Fatal (startProcess (mpvProc validatedPath socket))
 
 kill ::
   Members [Embed IO, Final IO] r =>
-  Either MpvError (Process () () ()) ->
+  Process () () () ->
   Sem r ()
 kill =
-  traverse_ (tryAny . stopProcess)
+  void . tryIOError . stopProcess
+
+withMpvProcess' ::
+  Members [Reader MpvProcessConfig, Stop MpvError, Resource, Embed IO, Final IO] r =>
+  Path Abs File ->
+  (Process () () () -> Sem r a) ->
+  Sem r a
+withMpvProcess' socket =
+  bracket (startMpvProcess socket) kill
 
 withMpvProcess ::
-  Members [Reader MpvProcessConfig, Resource, Embed IO, Final IO] r =>
+  Members [Reader MpvProcessConfig, Stop MpvError, Resource, Embed IO, Final IO] r =>
   Path Abs File ->
-  (Either MpvError (Process () () ()) -> Sem r a) ->
+  Sem r a ->
   Sem r a
 withMpvProcess socket =
-  bracket (startMpvProcess socket) kill
+  bracket (startMpvProcess socket) kill . const
+
+withSocketMpv ::
+  Members [Reader MpvProcessConfig, Stop MpvError, Time t d, Resource, Race, Embed IO, Final IO] r =>
+  (Socket -> Sem r a) ->
+  Sem r a
+withSocketMpv ma =
+  withTempSocketPath \ socketPath ->
+    withMpvProcess socketPath (withSocket socketPath ma)
+
+withSocketQueuesMpv ::
+  ∀ t d r a .
+  Members [Reader MpvProcessConfig, Stop MpvError, Time t d, Log, Resource, Race, Async, Embed IO, Final IO] r =>
+  Sem (Queue (OutMessage Value) : Queue (InMessage Value) : r) a ->
+  Sem r a
+withSocketQueuesMpv ma =
+  interpretQueueTBM @(InMessage Value) 64 $ interpretQueueTBM @(OutMessage Value) 64 $ withSocketMpv \ socket ->
+    withAsync_ (readQueue socket) $ withAsync_ (writeQueue socket) ma

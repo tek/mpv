@@ -6,11 +6,13 @@ import Polysemy.Log (interpretLogStdoutConc)
 import Polysemy.Test (Hedgehog, Test, TestError, UnitTest, runTestAuto)
 import Polysemy.Time (GhcTime, interpretTimeGhc)
 
+import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
 
 type TestEffects =
   [
     Reader MpvProcessConfig,
+    Stop MpvError,
     GhcTime,
     Log,
     Race,
@@ -34,4 +36,5 @@ runTest =
   interpretRace .
   interpretLogStdoutConc .
   interpretTimeGhc .
+  stopToErrorWith show .
   runReader def

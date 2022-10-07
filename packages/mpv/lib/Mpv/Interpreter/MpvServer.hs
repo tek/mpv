@@ -7,7 +7,6 @@ import Exon (exon)
 import qualified Polysemy.Conc as Conc
 import qualified Polysemy.Conc.Data.QueueResult as QueueResult
 import qualified Polysemy.Conc.Queue as Queue
-import Polysemy.Internal.Tactics (liftT)
 import qualified Polysemy.Log as Log
 
 import Mpv.Data.Command (Command)
@@ -18,12 +17,12 @@ import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvEvent (MpvEvent (MpvEvent))
 import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
 import qualified Mpv.Effect.Ipc as Ipc
-import Mpv.Effect.Ipc (Ipc)
+import Mpv.Effect.Ipc (Ipc, withIpc)
 import Mpv.Effect.Mpv (Mpv)
 import qualified Mpv.Effect.MpvServer as MpvServer
 import Mpv.Effect.MpvServer (MpvServer)
-import Mpv.Interpreter.Ipc (interpretIpcNative, waitEventAndRun, withIpc)
-import Mpv.Interpreter.Mpv (interpretMpvIpc)
+import Mpv.Interpreter.Ipc (interpretIpcClient, interpretIpcNative)
+import Mpv.Interpreter.Mpv (interpretMpvIpcClient)
 
 data Control command where
   SendCommand :: command a -> MVar (Either MpvError a) -> Control command
@@ -40,7 +39,9 @@ dispatch cmd result = do
   embed (putMVar result r)
 
 serverActive ::
-  Members [Queue (Control command), Scoped_ resource (Ipc fmt command !! MpvError), Log, Embed IO] r =>
+  (∀ x . Show (command x)) =>
+  Member (Stop MpvError) r =>
+  Members [Queue (Control command), Scoped_ resource (Ipc fmt command !! MpvError) !! MpvError, Log, Embed IO] r =>
   Sem r ()
 serverActive =
   withIpc spin
@@ -48,17 +49,20 @@ serverActive =
     spin =
       Queue.read >>= \case
         QueueResult.Success Terminate ->
-          unit
+          Log.debug "mpv server: Terminate"
         QueueResult.Success (SendCommand cmd result) -> do
+          Log.debug [exon|mpv server: #{show cmd}|]
           dispatch cmd result
           spin
         QueueResult.NotAvailable ->
-          unit
+          Log.debug "mpv server: NotAvailable"
         QueueResult.Closed ->
-          unit
+          Log.debug "mpv server: Closed"
 
 serverIdle ::
-  Members [Queue (Control command), Scoped_ resource (Ipc fmt command !! MpvError), Log, Embed IO] r =>
+  (∀ x . Show (command x)) =>
+  Member (Stop MpvError) r =>
+  Members [Queue (Control command), Scoped_ resource (Ipc fmt command !! MpvError) !! MpvError, Log, Embed IO] r =>
   Sem r ()
 serverIdle =
   Queue.peek >>= \case
@@ -97,6 +101,7 @@ interpretMpvServer =
       Queue.write Terminate
 
 withMpvServer ::
+  Member (Stop MpvError) r =>
   Members [Reader MpvProcessConfig, Time t d, Log, Resource, Race, Async, Embed IO, Final IO] r =>
   InterpretersFor [MpvServer Command !! MpvError, ChanConsumer MpvEvent] r
 withMpvServer =
@@ -108,22 +113,10 @@ withMpvServer =
   raiseUnder .
   raise2Under
 
-interpretIpcClient ::
-  Member (MpvServer command !! MpvError) r =>
-  Members [EventConsumer token MpvEvent, Log, Resource, Async, Race] r =>
-  InterpreterFor (Ipc fmt command !! MpvError) r
-interpretIpcClient =
-  interpretResumableH \case
-    Ipc.Sync cmd ->
-      liftT (restop (MpvServer.send cmd))
-    Ipc.WaitEvent name interval ma -> do
-      (found, res) <- waitEventAndRun name interval (runTSimple ma)
-      pure ((found,) <$> res)
-
 interpretMpvClient ::
   Members [MpvServer Command !! MpvError, EventConsumer token MpvEvent, Log, Resource, Async, Race] r =>
   InterpreterFor (Mpv !! MpvError) r
 interpretMpvClient =
   interpretIpcClient .
-  interpretMpvIpc .
+  interpretMpvIpcClient .
   raiseUnder
