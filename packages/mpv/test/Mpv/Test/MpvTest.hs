@@ -2,7 +2,6 @@
 
 module Mpv.Test.MpvTest where
 
-import qualified Data.List.NonEmpty as NonEmpty
 import Path (relfile)
 import qualified Polysemy.Conc as Race
 import qualified Polysemy.Test as Test
@@ -27,7 +26,7 @@ import Mpv.Test.Run (runTest)
 import Path (File, Rel)
 #endif
 
-trackList :: NonEmpty Track
+trackList :: [Track]
 trackList =
   [
     Track (Just 1) False (Just "fre") Audio,
@@ -54,7 +53,7 @@ test_mpv =
           Mpv.setProp Property.SubFps 100
           Mpv.setProp Property.SubDelay 1
           assertEq 100 =<< Mpv.prop Property.SubFps
-          assertEq trackList . NonEmpty.sort . coerce =<< Mpv.prop Property.TrackList
+          assertEq trackList . sort . coerce =<< Mpv.prop Property.TrackList
           void Mpv.info
           void togglePlaybackState
           Mpv.setProp Property.Volume 100

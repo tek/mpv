@@ -15,7 +15,6 @@
     };
 
   in hix.lib.pro ({ config, lib, ... }: {
-    base = ./.;
     inherit overrides;
     depsFull = [prelate];
     packages.mpv = ./packages/mpv;

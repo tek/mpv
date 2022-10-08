@@ -41,7 +41,7 @@ data Track =
 json ''Track
 
 newtype TrackList =
-  TrackList { unTrackList :: NonEmpty Track }
+  TrackList { unTrackList :: [Track] }
   deriving stock (Eq, Show, Generic)
 
 json ''TrackList
