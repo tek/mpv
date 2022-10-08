@@ -1,7 +1,7 @@
 -- |Description: Mpv Client/Server Interpreters
 module Mpv.Interpreter.MpvServer where
 
-import Conc (ChanConsumer, Scoped_, interpretQueueTBM, withAsync_)
+import Conc (ChanConsumer, Scoped_, interpretQueueTBM, scoped_, withAsync_)
 import Data.Some (withSome)
 import Exon (exon)
 import qualified Polysemy.Conc as Conc
@@ -17,7 +17,7 @@ import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvEvent (MpvEvent (MpvEvent))
 import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
 import qualified Mpv.Effect.Ipc as Ipc
-import Mpv.Effect.Ipc (Ipc, withIpc)
+import Mpv.Effect.Ipc (Ipc)
 import Mpv.Effect.Mpv (Mpv)
 import qualified Mpv.Effect.MpvServer as MpvServer
 import Mpv.Effect.MpvServer (MpvServer)
@@ -40,11 +40,10 @@ dispatch cmd result = do
 
 serverActive ::
   (∀ x . Show (command x)) =>
-  Member (Stop MpvError) r =>
   Members [Queue (Control command), Scoped_ resource (Ipc fmt command !! MpvError) !! MpvError, Log, Embed IO] r =>
   Sem r ()
 serverActive =
-  withIpc spin
+  scoped_ spin !! \ e -> Log.error [exon|mpv server: process startup error: #{show e}|]
   where
     spin =
       Queue.read >>= \case
@@ -61,7 +60,6 @@ serverActive =
 
 serverIdle ::
   (∀ x . Show (command x)) =>
-  Member (Stop MpvError) r =>
   Members [Queue (Control command), Scoped_ resource (Ipc fmt command !! MpvError) !! MpvError, Log, Embed IO] r =>
   Sem r ()
 serverIdle =
@@ -101,7 +99,6 @@ interpretMpvServer =
       Queue.write Terminate
 
 withMpvServer ::
-  Member (Stop MpvError) r =>
   Members [Reader MpvProcessConfig, Time t d, Log, Resource, Race, Async, Embed IO, Final IO] r =>
   InterpretersFor [MpvServer Command !! MpvError, ChanConsumer MpvEvent] r
 withMpvServer =

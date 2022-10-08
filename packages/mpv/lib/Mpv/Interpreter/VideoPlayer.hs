@@ -83,7 +83,6 @@ interpretVideoPlayer =
   interpretAtomic Nothing . interpretMpvClient . interpretVideoPlayerMpvAtomic . raise2Under
 
 interpretVideoPlayerServer ::
-  Member (Stop MpvError) r =>
   Members [Reader MpvProcessConfig, Log, Resource, Async, Race, Time t d, Embed IO, Final IO] r =>
   InterpretersFor [VideoPlayer meta !! MpvError, Mpv !! MpvError, ChanConsumer MpvEvent] r
 interpretVideoPlayerServer =
