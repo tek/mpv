@@ -1,6 +1,6 @@
 module Mpv.Interpreter.VideoPlayer where
 
-import Conc (ChanConsumer, interpretAtomic)
+import Conc (interpretAtomic)
 
 import Mpv.Data.AudioId (AudioId (AudioId))
 import qualified Mpv.Data.Command as Command
@@ -76,14 +76,14 @@ interpretVideoPlayerMpvAtomic =
       restop (Mpv.prop Property.TimePos)
 
 interpretVideoPlayer ::
-  ∀ meta token r .
-  Members [MpvServer Command !! MpvError, EventConsumer token MpvEvent, Log, Resource, Async, Race, Embed IO] r =>
+  ∀ meta r .
+  Members [MpvServer Command !! MpvError, EventConsumer MpvEvent, Log, Resource, Async, Race, Embed IO] r =>
   InterpretersFor [VideoPlayer meta !! MpvError, Mpv !! MpvError] r
 interpretVideoPlayer =
   interpretAtomic Nothing . interpretMpvClient . interpretVideoPlayerMpvAtomic . raise2Under
 
 interpretVideoPlayerServer ::
   Members [Reader MpvProcessConfig, Log, Resource, Async, Race, Time t d, Embed IO, Final IO] r =>
-  InterpretersFor [VideoPlayer meta !! MpvError, Mpv !! MpvError, ChanConsumer MpvEvent] r
+  InterpretersFor [VideoPlayer meta !! MpvError, Mpv !! MpvError, EventConsumer MpvEvent] r
 interpretVideoPlayerServer =
   withMpvServer . interpretVideoPlayer . raise2Under

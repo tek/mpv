@@ -64,7 +64,7 @@ notifyResponse requestId result =
       (Requests n (Map.delete requestId p), Map.lookup requestId p)
 
 processMessage ::
-  Members [Events t MpvEvent, AtomicState (Requests Value), Log, Embed IO] r =>
+  Members [Events MpvEvent, AtomicState (Requests Value), Log, Embed IO] r =>
   InMessage Value ->
   Either Text (Either MpvEvent (Response Value)) ->
   Sem r ()
@@ -77,13 +77,13 @@ processMessage msg = \case
     parseError msg err
 
 responseListener ::
-  Members [Events t MpvEvent, Queue (InMessage Value), AtomicState (Requests Value), Log, Embed IO] r =>
+  Members [Events MpvEvent, Queue (InMessage Value), AtomicState (Requests Value), Log, Embed IO] r =>
   Sem r ()
 responseListener =
   Queue.loop \ msg -> processMessage msg (decodeInMessage msg)
 
 withResponseListener ::
-  Members [Events t MpvEvent, Queue (InMessage Value), Log, Resource, Race, Async, Embed IO] r =>
+  Members [Events MpvEvent, Queue (InMessage Value), Log, Resource, Race, Async, Embed IO] r =>
   InterpreterFor (AtomicState (Requests Value)) r
 withResponseListener ma =
   interpretAtomic (Requests 0 mempty) $ withAsync_ responseListener ma

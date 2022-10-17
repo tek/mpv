@@ -155,7 +155,7 @@ library
     , polysemy-log >=0.3.0.2
     , polysemy-plugin >=0.3
     , polysemy-time
-    , prelate ==0.1.*
+    , prelate ==0.2.*
     , some
     , sop-core
     , template-haskell
@@ -251,7 +251,7 @@ test-suite mpv-unit
     , polysemy-plugin >=0.3
     , polysemy-test
     , polysemy-time
-    , prelate ==0.1.*
+    , prelate ==0.2.*
     , tasty
     , tasty-expected-failure
   mixins:

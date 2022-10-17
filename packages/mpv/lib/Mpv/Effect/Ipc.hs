@@ -1,6 +1,5 @@
 module Mpv.Effect.Ipc where
 
-import Conc (Scoped_, scoped_)
 import Data.Some (Some)
 
 import Mpv.Data.Event (Event)
@@ -14,8 +13,8 @@ data Ipc (fmt :: Type) (command :: Type -> Type) :: Effect where
 makeSem ''Ipc
 
 withIpc ::
-  ∀ resource fmt command r .
-  Members [Scoped_ resource (Ipc fmt command !! MpvError) !! MpvError, Stop MpvError] r =>
+  ∀ fmt command r .
+  Members [Scoped_ (Ipc fmt command !! MpvError) !! MpvError, Stop MpvError] r =>
   InterpreterFor (Ipc fmt command !! MpvError) r
 withIpc =
   restop . scoped_ . raiseUnder

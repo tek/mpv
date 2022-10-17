@@ -1,7 +1,7 @@
 -- |Description: Mpv Client/Server Interpreters
 module Mpv.Interpreter.MpvServer where
 
-import Conc (ChanConsumer, Scoped_, interpretQueueTBM, scoped_, withAsync_)
+import Conc (interpretQueueTBM, withAsync_)
 import Data.Some (withSome)
 import Exon (exon)
 import qualified Polysemy.Conc as Conc
@@ -40,7 +40,7 @@ dispatch cmd result = do
 
 serverActive ::
   (∀ x . Show (command x)) =>
-  Members [Queue (Control command), Scoped_ resource (Ipc fmt command !! MpvError) !! MpvError, Log, Embed IO] r =>
+  Members [Queue (Control command), Scoped_ (Ipc fmt command !! MpvError) !! MpvError, Log, Embed IO] r =>
   Sem r ()
 serverActive =
   scoped_ spin !! \ e -> Log.error [exon|mpv server: process startup error: #{show e}|]
@@ -60,7 +60,7 @@ serverActive =
 
 serverIdle ::
   (∀ x . Show (command x)) =>
-  Members [Queue (Control command), Scoped_ resource (Ipc fmt command !! MpvError) !! MpvError, Log, Embed IO] r =>
+  Members [Queue (Control command), Scoped_ (Ipc fmt command !! MpvError) !! MpvError, Log, Embed IO] r =>
   Sem r ()
 serverIdle =
   Queue.peek >>= \case
@@ -72,7 +72,7 @@ serverIdle =
     QueueResult.Closed -> unit
 
 serverEventListener ::
-  Members [EventConsumer token MpvEvent, MpvServer command !! MpvError, Log] r =>
+  Members [EventConsumer MpvEvent, MpvServer command !! MpvError, Log] r =>
   Sem r ()
 serverEventListener =
   Conc.subscribeLoop \case
@@ -100,7 +100,7 @@ interpretMpvServer =
 
 withMpvServer ::
   Members [Reader MpvProcessConfig, Time t d, Log, Resource, Race, Async, Embed IO, Final IO] r =>
-  InterpretersFor [MpvServer Command !! MpvError, ChanConsumer MpvEvent] r
+  InterpretersFor [MpvServer Command !! MpvError, EventConsumer MpvEvent] r
 withMpvServer =
   interpretQueueTBM 64 .
   interpretIpcNative .
@@ -111,7 +111,7 @@ withMpvServer =
   raise2Under
 
 interpretMpvClient ::
-  Members [MpvServer Command !! MpvError, EventConsumer token MpvEvent, Log, Resource, Async, Race] r =>
+  Members [MpvServer Command !! MpvError, EventConsumer MpvEvent, Log, Resource, Async, Race] r =>
   InterpreterFor (Mpv !! MpvError) r
 interpretMpvClient =
   interpretIpcClient .

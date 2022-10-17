@@ -3,7 +3,6 @@
 -- |Description: Mpv Effect
 module Mpv.Effect.Mpv where
 
-import Conc (Scoped_, scoped_)
 import Polysemy.Time (Seconds (Seconds))
 
 import Mpv.Data.Command (Command, CycleDirection)
@@ -29,7 +28,7 @@ command =
   commandSync (Seconds 1)
 
 withMpv ::
-  Member (Scoped_ resource (Mpv !! MpvError)) r =>
+  Member (Scoped_ (Mpv !! MpvError)) r =>
   InterpreterFor (Mpv !! MpvError) r
 withMpv =
   scoped_

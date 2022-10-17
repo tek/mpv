@@ -1,6 +1,6 @@
 module Mpv.Interpreter.Mpv where
 
-import Conc (ChanConsumer, Consume, Scoped_, interpretScopedRWith, scoped_)
+import Conc (Consume, interpretScopedRWith)
 
 import qualified Mpv.Data.Command as Command
 import Mpv.Data.Command (Command)
@@ -38,8 +38,8 @@ type MpvScope fmt =
   '[Ipc fmt Command !! MpvError]
 
 mpvScope ::
-  ∀ resource fmt r a .
-  Member (Scoped_ resource (Ipc fmt Command !! MpvError) !! MpvError) r =>
+  ∀ fmt r a .
+  Member (Scoped_ (Ipc fmt Command !! MpvError) !! MpvError) r =>
   (() -> Sem (MpvScope fmt ++ Stop MpvError : r) a) ->
   Sem (Stop MpvError : r) a
 mpvScope use =
@@ -72,22 +72,22 @@ interpretMpvIpcClient =
   interpretResumable handleMpvIpc
 
 interpretMpvIpcServer ::
-  ∀ resource fmt r .
-  Member (Scoped_ resource (Ipc fmt Command !! MpvError) !! MpvError) r =>
-  InterpreterFor (Scoped_ () (Mpv !! MpvError) !! MpvError) r
+  ∀ fmt r .
+  Member (Scoped_ (Ipc fmt Command !! MpvError) !! MpvError) r =>
+  InterpreterFor (Scoped_ (Mpv !! MpvError) !! MpvError) r
 interpretMpvIpcServer =
   interpretScopedRWith @(MpvScope _) (const mpvScope) \ _ -> handleMpvIpc
 
 interpretMpvNative ::
   Members [Reader MpvProcessConfig, Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
-  InterpretersFor [Scoped_ () (Mpv !! MpvError) !! MpvError, ChanConsumer MpvEvent] r
+  InterpretersFor [Scoped_ (Mpv !! MpvError) !! MpvError, EventConsumer MpvEvent] r
 interpretMpvNative =
   interpretIpcNative .
   interpretMpvIpcServer .
   raiseUnder
 
 events ::
-  Member (EventConsumer token MpvEvent) r =>
+  Member (EventConsumer MpvEvent) r =>
   InterpreterFor (Consume MpvEvent) r
 events =
   scoped_

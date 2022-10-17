@@ -2,7 +2,6 @@ module Mpv.Data.MpvEvent where
 
 import Data.Aeson (FromJSON (parseJSON), withObject, (.:))
 import Data.Some (Some (Some))
-import Polysemy.Conc (ChanConsumer)
 
 import qualified Mpv.Data.Event as Event
 import Mpv.Data.Event (Event)
@@ -39,4 +38,4 @@ instance FromJSON MpvEvent where
 instance ToJSON MpvEvent where
 
 type MpvEventConsumer =
-  ChanConsumer MpvEvent
+  EventConsumer MpvEvent

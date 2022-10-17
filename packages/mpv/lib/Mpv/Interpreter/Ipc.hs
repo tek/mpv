@@ -1,13 +1,6 @@
 module Mpv.Interpreter.Ipc where
 
-import Conc (
-  ChanConsumer,
-  ChanEvents,
-  Scoped_,
-  interpretEventsChan,
-  interpretScopedRWithH,
-  withAsync,
-  )
+import Conc (interpretEventsChan, interpretScopedRWithH, withAsync)
 import Data.Aeson (Value)
 import qualified Data.Map.Strict as Map
 import Data.Some (Some)
@@ -79,7 +72,7 @@ syncRequest cmd = do
   stopEitherWith (MpvError . coerce) =<< Commands.decode cmd fmt
 
 waitEvent ::
-  Member (EventConsumer token MpvEvent) r =>
+  Member (EventConsumer MpvEvent) r =>
   EventName ->
   Sem r (Some Event)
 waitEvent target =
@@ -91,7 +84,7 @@ waitEvent target =
 
 waitEventAndRun ::
   TimeUnit u =>
-  Members [EventConsumer token MpvEvent, Log, Resource, Async, Race] r =>
+  Members [EventConsumer MpvEvent, Log, Resource, Async, Race] r =>
   EventName ->
   u ->
   Sem r a ->
@@ -106,7 +99,7 @@ waitEventAndRun name interval ma =
     pure (found, res)
 
 interpretIpcWithQueue ::
-  Members [Commands fmt command, EventConsumer token MpvEvent] r =>
+  Members [Commands fmt command, EventConsumer MpvEvent] r =>
   Members [Queue (OutMessage fmt), AtomicState (Requests fmt), Log, Resource, Async, Race, Embed IO] r =>
   InterpreterFor (Ipc fmt command !! MpvError) r
 interpretIpcWithQueue =
@@ -122,8 +115,8 @@ type IpcScope fmt =
 
 ipcScope ::
   Show pse =>
-  Member (Scoped SocketPath pres (SystemProcess !! pe) !! pse) r =>
-  Members [ChanEvents MpvEvent, Commands Value Command, ChanConsumer MpvEvent] r =>
+  Member (Scoped SocketPath (SystemProcess !! pe) !! pse) r =>
+  Members [Events MpvEvent, Commands Value Command, EventConsumer MpvEvent] r =>
   Members [Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
   (() -> Sem (IpcScope Value ++ Stop MpvError : r) a) ->
   Sem (Stop MpvError : r) a
@@ -132,10 +125,10 @@ ipcScope use =
 
 interpretIpc ::
   Show pse =>
-  Member (Scoped SocketPath pres (SystemProcess !! pe) !! pse) r =>
-  Members [Commands Value Command, ChanEvents MpvEvent, ChanConsumer MpvEvent] r =>
+  Member (Scoped SocketPath (SystemProcess !! pe) !! pse) r =>
+  Members [Commands Value Command, Events MpvEvent, EventConsumer MpvEvent] r =>
   Members [Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
-  InterpreterFor (Scoped_ () (Ipc Value Command !! MpvError) !! MpvError) r
+  InterpreterFor (Scoped_ (Ipc Value Command !! MpvError) !! MpvError) r
 interpretIpc =
   interpretScopedRWithH @(IpcScope _) (const ipcScope) \ _ -> \case
     Ipc.Sync cmd ->
@@ -147,8 +140,8 @@ interpretIpc =
 interpretIpcNative ::
   Members [Reader MpvProcessConfig, Resource, Async, Race, Log, Time t d, Embed IO, Final IO] r =>
   InterpretersFor [
-    Scoped_ () (Ipc Value Command !! MpvError) !! MpvError,
-    ChanConsumer MpvEvent
+    Scoped_ (Ipc Value Command !! MpvError) !! MpvError,
+    EventConsumer MpvEvent
   ] r
 interpretIpcNative =
   interpretEventsChan .
@@ -159,7 +152,7 @@ interpretIpcNative =
 
 interpretIpcClient ::
   Member (MpvServer command !! MpvError) r =>
-  Members [EventConsumer token MpvEvent, Log, Resource, Async, Race] r =>
+  Members [EventConsumer MpvEvent, Log, Resource, Async, Race] r =>
   InterpreterFor (Ipc fmt command !! MpvError) r
 interpretIpcClient =
   interpretResumableH \case

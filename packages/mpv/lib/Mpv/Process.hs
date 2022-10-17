@@ -8,7 +8,6 @@ import Network.Socket (Socket)
 import Path (Abs, File, Path, parent, relfile, toFilePath, (</>))
 import Path.IO (createTempDir, getTempDir, removeDirRecur)
 import Process (
-  PipesProcess,
   SysProcConf,
   SystemProcess,
   SystemProcessError,
@@ -59,7 +58,7 @@ mpvProc mpv socket =
 
 withMpvProcess ::
   Show pse =>
-  Members [Scoped SocketPath pres (SystemProcess !! pe) !! pse, Stop MpvError] r =>
+  Members [Scoped SocketPath (SystemProcess !! pe) !! pse, Stop MpvError] r =>
   SocketPath ->
   InterpreterFor (SystemProcess !! pe) r
 withMpvProcess socket =
@@ -68,9 +67,9 @@ withMpvProcess socket =
   raiseUnder
 
 withSocketMpv ::
-  ∀ pres pe pse t d r a .
+  ∀ pe pse t d r a .
   Show pse =>
-  Member (Scoped SocketPath pres (SystemProcess !! pe) !! pse) r =>
+  Member (Scoped SocketPath (SystemProcess !! pe) !! pse) r =>
   Members [Stop MpvError, Time t d, Resource, Race, Embed IO] r =>
   (Socket -> Sem r a) ->
   Sem r a
@@ -79,9 +78,9 @@ withSocketMpv ma =
     withMpvProcess socketPath (raise (withSocket socketPath ma))
 
 withSocketQueuesMpv ::
-  ∀ pres pe pse t d r a .
+  ∀ pe pse t d r a .
   Show pse =>
-  Member (Scoped SocketPath pres (SystemProcess !! pe) !! pse) r =>
+  Member (Scoped SocketPath (SystemProcess !! pe) !! pse) r =>
   Members [Stop MpvError, Time t d, Log, Resource, Race, Async, Embed IO, Final IO] r =>
   Sem (Queue (OutMessage Value) : Queue (InMessage Value) : r) a ->
   Sem r a
@@ -99,6 +98,6 @@ processConfig (SocketPath socket) = do
 
 interpretMpvProcess ::
   Members [Reader MpvProcessConfig, Resource, Embed IO] r =>
-  InterpreterFor (Scoped SocketPath PipesProcess (SystemProcess !! SystemProcessError) !! SystemProcessScopeError) r
+  InterpreterFor (Scoped SocketPath (SystemProcess !! SystemProcessError) !! SystemProcessScopeError) r
 interpretMpvProcess =
   interpretSystemProcessNative processConfig
