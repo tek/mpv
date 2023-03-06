@@ -1,18 +1,16 @@
 module Mpv.Interpreter.Ipc where
 
-import Conc (interpretEventsChan, interpretScopedRWithH, withAsync)
+import Conc (interpretEventsChan, timeout_, withAsync)
 import Data.Aeson (Value)
 import qualified Data.Map.Strict as Map
 import Data.Some (Some)
 import Exon (exon)
-import qualified Polysemy.Conc as Race
-import qualified Polysemy.Conc as Events
-import qualified Polysemy.Conc.Data.QueueResult as QueueResult
-import qualified Polysemy.Conc.Queue as Queue
 import Polysemy.Internal.Tactics (liftT)
 import qualified Polysemy.Log as Log
 import Polysemy.Time (Seconds (Seconds))
 import Process (SystemProcess)
+import qualified Queue as QueueResult
+import qualified Queue
 
 import Mpv.Data.Command (Command)
 import Mpv.Data.Event (Event)
@@ -67,7 +65,7 @@ syncRequest ::
   Sem r a
 syncRequest cmd = do
   result <- sendRequest cmd
-  response <- Race.timeout_ (pure (Left "mpv request timed out")) (Seconds 3) (embed (takeMVar result))
+  response <- timeout_ (pure (Left "mpv request timed out")) (Seconds 3) (embed (takeMVar result))
   fmt <- stopEitherWith (MpvError . coerce) response
   stopEitherWith (MpvError . coerce) =<< Commands.decode cmd fmt
 
@@ -76,10 +74,10 @@ waitEvent ::
   EventName ->
   Sem r (Some Event)
 waitEvent target =
-  Events.subscribe spin
+  subscribe spin
   where
     spin =
-      Events.consume >>= \ (MpvEvent name payload) ->
+      consume >>= \ (MpvEvent name payload) ->
         if (target == name) then pure payload else spin
 
 waitEventAndRun ::
@@ -92,7 +90,7 @@ waitEventAndRun ::
 waitEventAndRun name interval ma =
   withAsync (waitEvent name) \ handle -> do
     res <- ma
-    found <- Race.timeout_ (pure Nothing) interval do
+    found <- timeout_ (pure Nothing) interval do
       await handle
     when (isNothing found) do
       Log.warn [exon|waiting for mpv event #{eventNameText name} failed|]

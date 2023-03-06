@@ -3,7 +3,7 @@
 module Mpv.Test.ServerTest where
 
 import Path (Abs, File, Path, relfile)
-import qualified Polysemy.Conc as Race
+import qualified Conc as Race
 import qualified Polysemy.Test as Test
 import Polysemy.Test (Hedgehog, UnitTest, assertEq, assertJust)
 import Polysemy.Time (Seconds (Seconds))

@@ -3,7 +3,7 @@
 module Mpv.Test.MpvTest where
 
 import Path (relfile)
-import qualified Polysemy.Conc as Race
+import qualified Conc as Race
 import qualified Polysemy.Test as Test
 import Polysemy.Test (UnitTest, assertClose, assertEq)
 import qualified Polysemy.Time as Time

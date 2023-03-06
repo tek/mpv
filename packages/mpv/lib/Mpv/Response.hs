@@ -4,8 +4,8 @@ import Conc (interpretAtomic, withAsync_)
 import Data.Aeson (Value (Null), fromJSON)
 import qualified Data.Map.Strict as Map
 import Exon (exon)
-import qualified Polysemy.Conc as Events
-import qualified Polysemy.Conc as Queue
+import qualified Conc as Events
+import qualified Conc as Queue
 import qualified Polysemy.Log as Log
 
 import Mpv.Data.Message (Message (ResponseEvent, ResponseMessage))

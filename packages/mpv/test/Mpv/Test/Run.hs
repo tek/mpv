@@ -2,7 +2,7 @@ module Mpv.Test.Run where
 
 import Hedgehog.Internal.Property (Failure)
 import Log (Severity (Debug, Error), interpretLogStdoutLevelConc)
-import Polysemy.Conc (interpretRace)
+import Conc (interpretRace)
 import Polysemy.Test (Hedgehog, Test, TestError, UnitTest, runTestAuto)
 import Polysemy.Time (GhcTime, interpretTimeGhc)
 

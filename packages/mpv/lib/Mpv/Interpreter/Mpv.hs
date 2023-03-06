@@ -1,6 +1,6 @@
 module Mpv.Interpreter.Mpv where
 
-import Conc (Consume, interpretScopedRWith)
+import Conc (Consume)
 
 import qualified Mpv.Data.Command as Command
 import Mpv.Data.Command (Command)

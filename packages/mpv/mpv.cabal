@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.34.7.
+-- This file has been generated from package.yaml by hpack version 0.35.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -11,7 +11,7 @@ description:    Please see the README on GitHub at <https://github.com/tek/mpv>
 category:       Video
 author:         Torsten Schmits
 maintainer:     haskell@tryp.io
-copyright:      2022 Torsten Schmits
+copyright:      2023 Torsten Schmits
 license:        BSD-2-Clause-Patent
 license-file:   LICENSE
 build-type:     Simple
@@ -155,7 +155,7 @@ library
     , polysemy-log >=0.3.0.2
     , polysemy-plugin >=0.3
     , polysemy-time
-    , prelate ==0.2.*
+    , prelate >=0.5.1 && <0.6
     , some
     , sop-core
     , template-haskell
@@ -251,7 +251,7 @@ test-suite mpv-unit
     , polysemy-plugin >=0.3
     , polysemy-test
     , polysemy-time
-    , prelate ==0.2.*
+    , prelate >=0.5.1 && <0.6
     , tasty
     , tasty-expected-failure
   mixins:

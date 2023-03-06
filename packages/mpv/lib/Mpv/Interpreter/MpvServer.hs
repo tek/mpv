@@ -4,9 +4,9 @@ module Mpv.Interpreter.MpvServer where
 import Conc (interpretQueueTBM, withAsync_)
 import Data.Some (withSome)
 import Exon (exon)
-import qualified Polysemy.Conc as Conc
-import qualified Polysemy.Conc.Data.QueueResult as QueueResult
-import qualified Polysemy.Conc.Queue as Queue
+import qualified Conc as Conc
+import qualified Queue as QueueResult
+import qualified Queue
 import qualified Polysemy.Log as Log
 
 import Mpv.Data.Command (Command)

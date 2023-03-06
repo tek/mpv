@@ -3,7 +3,7 @@
 module Mpv.Test.VideoPlayerTest where
 
 import Path (relfile)
-import qualified Polysemy.Conc as Race
+import qualified Conc as Race
 import qualified Polysemy.Test as Test
 import Polysemy.Test (UnitTest, assertEq, assertJust)
 import Polysemy.Time (Seconds (Seconds))

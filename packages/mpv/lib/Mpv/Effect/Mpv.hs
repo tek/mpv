@@ -16,7 +16,7 @@ data Mpv :: Effect where
   AddProp :: Show v => Property v -> Maybe v -> Mpv m ()
   MultiplyProp :: Show v => Property v -> v -> Mpv m ()
   CycleProp :: Show v => Property v -> Maybe CycleDirection -> Mpv m ()
-  SetOption :: Text -> Text ->  Mpv m ()
+  SetOption :: Text -> Text -> Mpv m ()
 
 makeSem ''Mpv
 

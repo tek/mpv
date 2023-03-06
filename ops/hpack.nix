@@ -32,7 +32,7 @@ let
     license-file = "LICENSE";
     author = "Torsten Schmits";
     maintainer = "haskell@tryp.io";
-    copyright = "2022 Torsten Schmits";
+    copyright = "2023 Torsten Schmits";
     category = "Video";
     build-type = "Simple";
   };
@@ -49,7 +49,7 @@ let
 
   dependencies = [
     { name = "base"; version = ">= 4.12 && < 5"; mixin = "hiding (Prelude)"; }
-    { name = "prelate"; version = "^>= 0.2"; mixin = ["(Prelate as Prelude)" "hiding (Prelate)"]; }
+    { name = "prelate"; version = "^>= 0.5.1"; mixin = ["(Prelate as Prelude)" "hiding (Prelate)"]; }
     "polysemy >= 1.6"
     "polysemy-plugin >= 0.4"
   ];
