@@ -72,7 +72,7 @@ encodeCommandGen cmd args =
   encodeCommand cmd argValues
   where
     argValues =
-      hcollapse (hcmap (Proxy @ToJSON) (K .  toJSON .  unI) args)
+      hcollapse (hcmap (Proxy @ToJSON) (K . toJSON . unI) args)
 
 encodeProp :: Property v -> v -> Value
 encodeProp = \case

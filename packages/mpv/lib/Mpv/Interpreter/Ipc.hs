@@ -51,12 +51,11 @@ sendRequest cmd = do
   msg <- Commands.encode requestId False cmd
   Queue.tryWrite (OutMessage msg) >>= \case
     QueueResult.Success () ->
-      unit
+      pure result
     QueueResult.Closed ->
       stop (MpvError.Fatal "message queue closed")
     QueueResult.NotAvailable ->
       stop (MpvError.Fatal "message queue full")
-  pure result
 
 syncRequest ::
   Members [Commands fmt command, AtomicState (Requests fmt)] r =>
@@ -78,7 +77,7 @@ waitEvent target =
   where
     spin =
       consume >>= \ (MpvEvent name payload) ->
-        if (target == name) then pure payload else spin
+        if target == name then pure payload else spin
 
 waitEventAndRun ::
   TimeUnit u =>
