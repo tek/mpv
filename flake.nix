@@ -45,7 +45,6 @@
           "network ^>= 3.1"
           "path ^>= 0.9"
           "path-io ^>= 1.7"
-          "polysemy-conc ^>= 0.12"
           "some ^>= 1.0"
           "sop-core ^>= 0.5"
           "template-haskell"
