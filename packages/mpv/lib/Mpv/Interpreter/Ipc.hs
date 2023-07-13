@@ -3,7 +3,7 @@ module Mpv.Interpreter.Ipc where
 import Conc (interpretEventsChan, timeout_, withAsync)
 import Data.Aeson (Value)
 import qualified Data.Map.Strict as Map
-import Data.Some (Some)
+import Data.Some (Some (Some))
 import Exon (exon)
 import Polysemy.Internal.Tactics (liftT)
 import qualified Polysemy.Log as Log
@@ -32,6 +32,8 @@ import Mpv.Effect.MpvServer (MpvServer)
 import Mpv.Interpreter.Commands (interpretCommandsJson)
 import Mpv.Process (interpretMpvProcess, withSocketQueuesMpv)
 import Mpv.Response (withResponseListener)
+import qualified Mpv.Data.EventPayload as Payload
+import qualified Mpv.Data.Event as Event
 
 createRequest ::
   Members [AtomicState (Requests fmt), Embed IO] r =>
@@ -68,20 +70,29 @@ syncRequest cmd = do
   fmt <- stopEitherWith (MpvError . coerce) response
   stopEitherWith (MpvError . coerce) =<< Commands.decode cmd fmt
 
+pattern FatalFileError :: Text -> Some Event
+pattern FatalFileError err <- Some (Event.EndFile (Payload.EndFile _ Payload.Error (Just (Payload.FileError err))))
+
 waitEvent ::
-  Member (EventConsumer MpvEvent) r =>
+  Members [EventConsumer MpvEvent, Stop MpvError, Log] r =>
   EventName ->
   Sem r (Some Event)
 waitEvent target =
   subscribe spin
   where
     spin =
-      consume >>= \ (MpvEvent name payload) ->
-        if target == name then pure payload else spin
+      consume >>= \ (MpvEvent name payload) -> do
+        Log.debug [exon|mpv ipc: received event #{eventNameText name}|]
+        handleEvent name payload
+    handleEvent name payload
+      | target == name = pure payload
+      | FatalFileError err <- payload =
+        stop (MpvError.Fatal [exon|File could not be loaded, probably doesn't exist: #{err}|])
+      | otherwise = spin
 
 waitEventAndRun ::
   TimeUnit u =>
-  Members [EventConsumer MpvEvent, Log, Resource, Async, Race] r =>
+  Members [EventConsumer MpvEvent, Stop MpvError, Log, Resource, Async, Race] r =>
   EventName ->
   u ->
   Sem r a ->

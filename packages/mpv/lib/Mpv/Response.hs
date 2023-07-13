@@ -69,9 +69,11 @@ processMessage ::
   Either Text (Either MpvEvent (Response Value)) ->
   Sem r ()
 processMessage msg = \case
-  Right (Right (Response requestId payload)) ->
+  Right (Right (Response requestId payload)) -> do
+    Log.trace [exon|mpv response listener: received response to #{show requestId}: #{show payload}|]
     notifyResponse requestId payload
-  Right (Left event) ->
+  Right (Left event) -> do
+    Log.trace [exon|mpv response listener: received event: #{show event}|]
     Events.publish event
   Left err ->
     parseError msg err

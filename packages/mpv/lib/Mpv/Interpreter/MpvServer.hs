@@ -1,13 +1,13 @@
 -- |Description: Mpv Client/Server Interpreters
 module Mpv.Interpreter.MpvServer where
 
+import qualified Conc as Conc
 import Conc (interpretQueueTBM, withAsync_)
 import Data.Some (withSome)
 import Exon (exon)
-import qualified Conc as Conc
+import qualified Polysemy.Log as Log
 import qualified Queue as QueueResult
 import qualified Queue
-import qualified Polysemy.Log as Log
 
 import Mpv.Data.Command (Command)
 import qualified Mpv.Data.Event as Event
@@ -66,10 +66,11 @@ serverIdle =
   Queue.peek >>= \case
     QueueResult.Success Terminate ->
       Queue.read *> Log.warn "mpv server: received Terminate in idle server"
-    QueueResult.Success (SendCommand _ _) ->
+    QueueResult.Success (SendCommand _ _) -> do
+      Log.trace "mpv server: switching to active mode"
       serverActive *> serverIdle
-    QueueResult.NotAvailable -> unit
-    QueueResult.Closed -> unit
+    QueueResult.NotAvailable -> Log.debug "mpv server: idle NotAvailable"
+    QueueResult.Closed -> Log.debug "mpv server: idle Closed"
 
 serverEventListener ::
   Members [EventConsumer MpvEvent, MpvServer command !! MpvError, Log] r =>
@@ -78,9 +79,10 @@ serverEventListener =
   Conc.subscribeLoop \case
     MpvEvent _ payload ->
       withSome payload \case
-        Event.EndFile (EventPayload.EndFile _ EndReason.Stop) ->
-          unit
-        Event.EndFile _ ->
+        Event.EndFile (EventPayload.EndFile _ EndReason.Stop _) ->
+          Log.trace "mpv server: end-file stop"
+        Event.EndFile _ -> do
+          Log.warn "mpv server: end-file other"
           resume MpvServer.terminate \ e ->
             Log.warn [exon|mpv server event listener: failed to send Terminate: #{show e}|]
         _ ->

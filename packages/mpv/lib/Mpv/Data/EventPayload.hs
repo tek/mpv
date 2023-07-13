@@ -43,10 +43,22 @@ instance ToJSON EndReason where
   toJSON =
     toJSON . endReasonText
 
+data FileError =
+  FileError Text
+  deriving stock (Eq, Show, Generic)
+
+instance FromJSON FileError where
+  parseJSON v =
+    FileError . fromMaybe (show v) <$> parseJSON v
+
+instance ToJSON FileError where
+  toJSON (FileError err) = toJSON err
+
 data EndFile =
   EndFile {
     playlist_entry_id :: Int,
-    reason :: EndReason
+    reason :: EndReason,
+    file_error :: Maybe FileError
   }
   deriving stock (Eq, Show)
 
