@@ -1,10 +1,8 @@
 module Mpv.Test.Run where
 
-import Hedgehog.Internal.Property (Failure)
-import Log (Severity (Debug, Error), interpretLogStdoutLevelConc)
-import Conc (interpretRace)
-import Polysemy.Test (Hedgehog, Test, TestError, UnitTest, runTestAuto)
-import Polysemy.Time (GhcTime, interpretTimeGhc)
+import Log (Severity (Debug, Error))
+import Polysemy.Test (UnitTest)
+import qualified Zeugma
 
 import Mpv.Data.MpvError (MpvError)
 import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
@@ -12,41 +10,28 @@ import Mpv.Data.MpvProcessConfig (MpvProcessConfig)
 type TestEffects =
   [
     Reader MpvProcessConfig,
-    Stop MpvError,
-    GhcTime,
-    Log,
-    Race,
-    Async,
-    Test,
-    Fail,
-    Error TestError,
-    Hedgehog IO,
-    Error Failure,
-    Embed IO,
-    Resource,
-    Final IO
-  ]
+    Stop MpvError
+  ] ++ Zeugma.TestStack
 
 runTestLevel ::
+  HasCallStack =>
   Severity ->
   Sem TestEffects () ->
   UnitTest
 runTestLevel level =
-  runTestAuto .
-  asyncToIOFinal .
-  interpretRace .
-  interpretLogStdoutLevelConc (Just level) .
-  interpretTimeGhc .
+  Zeugma.runTestLevel level .
   stopToErrorWith show .
   runReader def
 
 runTestDebug ::
+  HasCallStack =>
   Sem TestEffects () ->
   UnitTest
 runTestDebug =
   runTestLevel Debug
 
 runTest ::
+  HasCallStack =>
   Sem TestEffects () ->
   UnitTest
 runTest =
