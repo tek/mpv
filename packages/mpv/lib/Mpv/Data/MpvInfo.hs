@@ -1,7 +1,5 @@
 module Mpv.Data.MpvInfo where
 
-import Control.Lens (makeClassy)
-
 import Mpv.Data.AudioDelay (AudioDelay)
 import Mpv.Data.AudioTracks (AudioTracks)
 import Mpv.Data.PlaybackState (PlaybackState)
@@ -27,4 +25,3 @@ data MpvInfo =
   deriving stock (Eq, Show, Generic)
 
 json ''MpvInfo
-makeClassy ''MpvInfo

@@ -1,5 +1,3 @@
-{-# language CPP #-}
-
 module Mpv.Test.VideoPlayerTest where
 
 import Path (relfile)
@@ -12,10 +10,6 @@ import qualified Mpv.Effect.VideoPlayer as VideoPlayer
 import Mpv.Effect.VideoPlayer (VideoPlayer)
 import Mpv.Interpreter.VideoPlayer (interpretVideoPlayerServer)
 import Mpv.Test.Run (runTest)
-
-#if !MIN_VERSION_GLASGOW_HASKELL(9,0,0,0)
-import Path (File, Rel)
-#endif
 
 test_videoPlayer :: UnitTest
 test_videoPlayer =

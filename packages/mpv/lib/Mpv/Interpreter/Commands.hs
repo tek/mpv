@@ -3,8 +3,7 @@ module Mpv.Interpreter.Commands where
 import Data.Aeson (ToJSON (toJSON), Value)
 import Data.SOP (All, I (I), K (K), NP (Nil, (:*)), hcmap, hcollapse, unI)
 import Exon (exon)
-import Polysemy.Time (convert)
-import Polysemy.Time.Data.TimeUnit (unMilliSeconds, unNanoSeconds)
+import Time (convert, unMilliSeconds, unNanoSeconds)
 
 import Mpv.Data.AudioDelay (unAudioDelay)
 import qualified Mpv.Data.Command as Command
@@ -79,23 +78,23 @@ encodeProp = \case
   Property.Custom _ ->
     toJSON
   Property.Duration ->
-    toJSON . secondsFrac . unVideoDuration
+    toJSON . secondsFrac . (.unVideoDuration)
   Property.SubFps ->
     toJSON
   Property.SubDelay ->
-    toJSON . secondsFrac . unSubDelay
+    toJSON . secondsFrac . (.unSubDelay)
   Property.AudioDelay ->
-    toJSON . secondsFrac . unAudioDelay
+    toJSON . secondsFrac . (.unAudioDelay)
   Property.TrackList ->
     toJSON
   Property.PercentPos ->
     toJSON . ratioToPercent
   Property.TimePos ->
-    toJSON . secondsFrac . unVideoExpired
+    toJSON . secondsFrac . (.unVideoExpired)
   Property.Paused ->
     toJSON . PlaybackState.toBool
   Property.Volume ->
-    toJSON . unVolume
+    toJSON . (.unVolume)
 
 mpvCommand :: Command a -> RequestId -> Bool -> Value
 mpvCommand = \case

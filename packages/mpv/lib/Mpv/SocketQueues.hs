@@ -7,9 +7,9 @@ import qualified Data.ByteString as ByteString
 import Exon (exon)
 import Network.Socket (Socket)
 import qualified Network.Socket.ByteString as Socket
+import qualified Polysemy.Log as Log
 import qualified Queue as QueueResult
 import qualified Queue
-import qualified Polysemy.Log as Log
 
 import Mpv.Data.MpvResources (InMessage (InMessage, InMessageError), OutMessage (OutMessage))
 

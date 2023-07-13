@@ -1,5 +1,3 @@
-{-# language CPP #-}
-
 module Mpv.Process where
 
 import Data.Aeson (Value)
@@ -25,10 +23,6 @@ import Mpv.Data.MpvResources (InMessage, OutMessage)
 import Mpv.Data.SocketPath (SocketPath (SocketPath))
 import Mpv.Socket (withSocket)
 import Mpv.SocketQueues (withSocketQueues)
-
-#if !MIN_VERSION_GLASGOW_HASKELL(9,0,0,0)
-import Path (Rel)
-#endif
 
 tempSocket ::
   Member (Embed IO) r =>

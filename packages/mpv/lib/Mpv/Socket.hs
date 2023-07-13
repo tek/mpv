@@ -1,9 +1,9 @@
 module Mpv.Socket where
 
+import Conc (retryingWithError)
 import qualified Network.Socket as Socket
 import Network.Socket (SockAddr (SockAddrUnix), Socket)
 import Path (toFilePath)
-import Conc (retryingWithError)
 import Polysemy.Time (MilliSeconds (MilliSeconds), Seconds (Seconds))
 
 import qualified Mpv.Data.MpvError as MpvError
