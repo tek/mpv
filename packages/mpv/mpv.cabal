@@ -127,13 +127,13 @@ library
       aeson >=2.0 && <2.2
     , base ==4.*
     , dependent-sum-template ==0.1.*
-    , exon ==1.4.*
+    , exon >=1.4 && <1.7
     , network ==3.1.*
     , path ==0.9.*
     , path-io ==1.7.*
     , polysemy ==1.9.*
     , polysemy-plugin >=0.4.5 && <0.5
-    , prelate ==0.6.*
+    , prelate ==0.7.*
     , some ==1.0.*
     , sop-core ==0.5.*
     , template-haskell
@@ -199,7 +199,7 @@ test-suite mpv-test
     , polysemy ==1.9.*
     , polysemy-plugin >=0.4.5 && <0.5
     , polysemy-test ==0.7.*
-    , prelate ==0.6.*
+    , prelate ==0.7.*
     , tasty ==1.4.*
     , tasty-expected-failure ==0.12.*
     , zeugma ==0.8.*
